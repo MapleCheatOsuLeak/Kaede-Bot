@@ -24,6 +24,7 @@ class Program
             var restClient = services.GetRequiredService<DiscordRestClient>();
             
             client.ThreadCreated += services.GetRequiredService<SuggestionsService>().ClientOnThreadCreated;
+            client.ThreadCreated += services.GetRequiredService<BugReportsService>().ClientOnThreadCreated;
 
             client.Log += LogAsync;
             services.GetRequiredService<CommandService>().Log += LogAsync;
@@ -79,6 +80,7 @@ class Program
             .AddSingleton<CommandHandlingService>()
             .AddSingleton<GPTService>()
             .AddSingleton<SuggestionsService>()
+            .AddSingleton<BugReportsService>()
             .AddSingleton(config)
             .AddDbContext<KaedeDbContext>(options => options.UseSqlite($"Data Source={config.DatabasePath}"))
             .BuildServiceProvider();
