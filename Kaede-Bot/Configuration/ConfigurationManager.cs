@@ -4,9 +4,10 @@ namespace Kaede_Bot.Configuration;
 
 public class ConfigurationManager
 {
-    public string Token { get; set; }
-    public string DatabasePath { get; set; }
-    public GPTModelConfiguration GPTModelConfiguration { get; set; }
+    public string Token { get; private set; }
+    public string DatabasePath { get; private set; }
+    public ServerChannels ServerChannels { get; private set; }
+    public GPTModelConfiguration GPTModelConfiguration { get; private set; }
 
     public ConfigurationManager(string path) => LoadConfiguration(path);
 
@@ -20,6 +21,7 @@ public class ConfigurationManager
 
         Token = config!.Token;
         DatabasePath = config.DatabasePath;
+        ServerChannels = config.ServerChannels;
         GPTModelConfiguration = config.GPTModelConfiguration;
     }
 }

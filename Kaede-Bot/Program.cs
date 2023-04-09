@@ -23,6 +23,8 @@ class Program
             var client = services.GetRequiredService<DiscordSocketClient>();    
             var restClient = services.GetRequiredService<DiscordRestClient>();
             
+            client.ThreadCreated += services.GetRequiredService<SuggestionsService>().ClientOnThreadCreated;
+
             client.Log += LogAsync;
             services.GetRequiredService<CommandService>().Log += LogAsync;
             
@@ -55,7 +57,7 @@ class Program
             await Task.Delay(Timeout.Infinite);
         }
     }
-    
+
     private async Task LogAsync(LogMessage msg)
     {
         Console.WriteLine(msg.ToString());
@@ -76,6 +78,7 @@ class Program
             .AddSingleton<CommandService>()
             .AddSingleton<CommandHandlingService>()
             .AddSingleton<GPTService>()
+            .AddSingleton<SuggestionsService>()
             .AddSingleton(config)
             .AddDbContext<KaedeDbContext>(options => options.UseSqlite($"Data Source={config.DatabasePath}"))
             .BuildServiceProvider();

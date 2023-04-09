@@ -7,8 +7,10 @@ namespace Kaede_Bot.Modules;
 
 public class ModerationModule : ModuleBase<SocketCommandContext>
 {
-    public DiscordRestClient RestClient { get; set; }
-    
+    private readonly DiscordRestClient _restClient;
+
+    public ModerationModule(DiscordRestClient restClient) => _restClient = restClient;
+
     [Command("ban"), RequireUserPermission(GuildPermission.BanMembers)]
     [Summary("Bans a user from this server. Works even on non-member users")]
     public async Task Ban([Summary("Id or mention of a user to be banned")]string mentionOrId, [Summary("Delete message history for the last X days")]int pruneDays, [Summary("Ban reason")][Remainder]string reason)

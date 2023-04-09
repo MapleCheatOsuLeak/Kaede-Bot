@@ -4,5 +4,6 @@ public class Configuration
 {
     public string Token { get; set; }
     public string DatabasePath { get; set; }
+    public ServerChannels ServerChannels { get; set; }
     public GPTModelConfiguration GPTModelConfiguration { get; set; } = new GPTModelConfiguration();
 }

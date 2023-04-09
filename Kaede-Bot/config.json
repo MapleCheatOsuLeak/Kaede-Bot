@@ -1,7 +1,9 @@
 ﻿{
   "Token": "",
   "DatabasePath": "kaede.db",
-  
+  "ServerChannels": {
+    "SuggestionsChannelId": 0
+  },
   "GPTModelConfiguration": {
     "Token": "",
     "Model": "gpt-4",
