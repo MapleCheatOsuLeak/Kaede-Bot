@@ -348,3 +348,7 @@ MigrationBackup/
 
 # Ionide (cross platform F# VS Code tools) working folder
 .ionide/
+
+.idea/.idea.Kaede-Bot/.idea/
+
+.idea/.idea.Kaede-Bot/riderModule.iml
