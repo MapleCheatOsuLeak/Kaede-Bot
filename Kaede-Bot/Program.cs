@@ -81,6 +81,7 @@ class Program
             .AddSingleton<GPTService>()
             .AddSingleton<SuggestionsService>()
             .AddSingleton<BugReportsService>()
+            .AddSingleton<EmbedService>()
             .AddSingleton(config)
             .AddDbContext<KaedeDbContext>(options => options.UseSqlite($"Data Source={config.DatabasePath}"))
             .BuildServiceProvider();

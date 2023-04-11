@@ -2,6 +2,7 @@
   "Token": "",
   "DatabasePath": "kaede.db",
   "ServerChannels": {
+    "ActionLogsChannelId": 0,
     "SuggestionsChannelId": 0,
     "BugReportsChannelId": 0
   },

@@ -2,14 +2,26 @@
 using Discord.Commands;
 using Discord.Rest;
 using Discord.WebSocket;
+using Humanizer;
+using Kaede_Bot.Configuration;
+using Kaede_Bot.Services;
 
 namespace Kaede_Bot.Modules;
 
 public class ModerationModule : ModuleBase<SocketCommandContext>
 {
     private readonly DiscordRestClient _restClient;
+    private readonly EmbedService _embedService;
 
-    public ModerationModule(DiscordRestClient restClient) => _restClient = restClient;
+    private readonly ulong _actionLogsChannelId;
+    
+    public ModerationModule(DiscordRestClient restClient, EmbedService embedService, ConfigurationManager config)
+    {
+        _restClient = restClient;
+        _embedService = embedService;
+
+        _actionLogsChannelId = config.ServerChannels.ActionLogsChannelId;
+    }
 
     [Command("ban"), RequireUserPermission(GuildPermission.BanMembers)]
     [Summary("Bans a user from this server. Works even on non-member users")]
@@ -18,6 +30,13 @@ public class ModerationModule : ModuleBase<SocketCommandContext>
         if (ulong.TryParse(mentionOrId, out var userId) || MentionUtils.TryParseUser(mentionOrId, out userId))
         {
             await Context.Guild.AddBanAsync(userId, pruneDays, reason);
+
+            var restUser = await _restClient.GetUserAsync(userId);
+            await Context.Channel.SendMessageAsync(embed: _embedService.CreateBanEmbed(restUser, Context.User, reason));
+
+            var actionLogsChannel = Context.Guild.GetTextChannel(_actionLogsChannelId);
+            await actionLogsChannel.SendMessageAsync(embed: _embedService.CreateModActionEmbed(Context.User, "Ban",
+                $"User {restUser.GetFullname()} ({restUser.Id}) has been banned, prune days: {pruneDays}.", reason));
         }
     }
     
@@ -28,6 +47,13 @@ public class ModerationModule : ModuleBase<SocketCommandContext>
         if (ulong.TryParse(mentionOrId, out var userId) || MentionUtils.TryParseUser(mentionOrId, out userId))
         {
             await Context.Guild.RemoveBanAsync(userId);
+            
+            var restUser = await _restClient.GetUserAsync(userId);
+            await Context.Channel.SendMessageAsync(embed: _embedService.CreateUnbanEmbed(restUser, Context.User, reason));
+            
+            var actionLogsChannel = Context.Guild.GetTextChannel(_actionLogsChannelId);
+            await actionLogsChannel.SendMessageAsync(embed: _embedService.CreateModActionEmbed(Context.User, "Unban",
+                $"User {restUser.GetFullname()} ({restUser.Id}) has been unbanned.", reason));
         }
     }
     
@@ -41,6 +67,12 @@ public class ModerationModule : ModuleBase<SocketCommandContext>
             if (user != null)
             {
                 await user.KickAsync(reason);
+                
+                await Context.Channel.SendMessageAsync(embed: _embedService.CreateKickEmbed(user, Context.User, reason));
+                
+                var actionLogsChannel = Context.Guild.GetTextChannel(_actionLogsChannelId);
+                await actionLogsChannel.SendMessageAsync(embed: _embedService.CreateModActionEmbed(Context.User, "Kick",
+                    $"User {user.GetFullname()} ({user.Id}) has been kicked.", reason));
             }
         }
     }
@@ -57,6 +89,12 @@ public class ModerationModule : ModuleBase<SocketCommandContext>
                 if (TimeSpan.TryParseExact(duration, "d\\:hh\\:mm", Constants.Culture, out var time))
                 {
                     await user.SetTimeOutAsync(time);
+                    
+                    await Context.Channel.SendMessageAsync(embed: _embedService.CreateMuteEmbed(user, Context.User, time, reason));
+                    
+                    var actionLogsChannel = Context.Guild.GetTextChannel(_actionLogsChannelId);
+                    await actionLogsChannel.SendMessageAsync(embed: _embedService.CreateModActionEmbed(Context.User, "Mute",
+                        $"User {user.GetFullname()} ({user.Id}) has been muted for {time.Humanize(3, Constants.Culture)}", reason));
                 }
             }
         }
@@ -72,20 +110,33 @@ public class ModerationModule : ModuleBase<SocketCommandContext>
             if (user != null)
             {
                 await user.RemoveTimeOutAsync();
+
+                await Context.Channel.SendMessageAsync(embed: _embedService.CreateUnmuteEmbed(user, Context.User, reason));
+                
+                var actionLogsChannel = Context.Guild.GetTextChannel(_actionLogsChannelId);
+                await actionLogsChannel.SendMessageAsync(embed: _embedService.CreateModActionEmbed(Context.User, "Unmute",
+                    $"User {user.GetFullname()} ({user.Id}) has been unmuted.", reason));
             }
         }
     }
     
     [Command("purge"), RequireUserPermission(GuildPermission.ManageMessages)]
     [Summary("Deletes a specified amount of messages.")]
-    public async Task Purge([Summary("Amount of messages to delete.")]int count)
+    public async Task Purge([Summary("Amount of messages to delete.")]int count, [Summary("Purge reason")][Remainder]string reason)
     {
         await Context.Message.DeleteAsync();
             
         int messagesToDelete = count > 100 ? 100 : count;
         var messages = await Context.Channel.GetMessagesAsync(messagesToDelete).FlattenAsync();
-        
-        if (Context.Channel is SocketTextChannel channel) 
+
+        if (Context.Channel is SocketTextChannel channel)
+        {
             await channel.DeleteMessagesAsync(messages);
+
+            var actionLogsChannel = Context.Guild.GetTextChannel(_actionLogsChannelId);
+            await actionLogsChannel.SendMessageAsync(embed: _embedService.CreateModActionEmbed(Context.User, "Purge",
+                $"{messagesToDelete} {(messagesToDelete == 1 ? "message" : "messages")} {(messagesToDelete == 1 ? "has" : "have")} been removed from #{channel.Name} channel.",
+                reason));
+        }
     }
 }

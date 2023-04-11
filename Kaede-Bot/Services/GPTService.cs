@@ -58,10 +58,7 @@ public class GPTService
                     new()
                     {
                         Role = "system",
-                        Content = _systemMessage.Replace("{username}",
-                            (context.User is SocketGuildUser guildUser && !string.IsNullOrEmpty(guildUser.Nickname))
-                                ? guildUser.Nickname
-                                : context.User.Username)
+                        Content = _systemMessage.Replace("{username}", context.User.GetNicknameOrUsername())
                     }
                 };
 
