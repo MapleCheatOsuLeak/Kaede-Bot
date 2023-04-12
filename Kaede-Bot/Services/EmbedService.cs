@@ -248,7 +248,7 @@ public class EmbedService
             },
             Footer = new EmbedFooterBuilder
             {
-                Text = $"Triggered by {user.GetFullname()}",
+                Text = $"Executed by {user.GetFullname()}",
                 IconUrl = user.GetAvatarUrl()
             }
 
@@ -280,7 +280,7 @@ public class EmbedService
             Color = new Color(Constants.AccentColour),
             Footer = new EmbedFooterBuilder
             {
-                Text = $"Triggered by {user.GetFullname()}",
+                Text = $"Executed by {user.GetFullname()}",
                 IconUrl = user.GetAvatarUrl()
             }
 
@@ -356,7 +356,7 @@ public class EmbedService
 
         if (canProvideMapleInfo)
         {
-            embed.AddField("User ID", userinfo!.ID, true);
+            embed.AddField("User ID", userinfo!.UserID, true);
             embed.AddField("Joined on", userinfo.JoinedOn, true);
             embed.AddField("⠀", "**Subscriptions**", false);
             if (userinfo.Subscriptions.Count > 0)
@@ -369,6 +369,26 @@ public class EmbedService
         }
         else
             embed.AddField("Your discord account is not linked!", "Link your account at https://maple.software/dashboard/settings to view more information!", false);
+
+        return embed.Build();
+    }
+    
+    public Embed CreateSoftwareStatus(IUser user, List<CheatStatusModel> statuses)
+    {
+        EmbedBuilder embed = new EmbedBuilder
+        {
+            Title = ":shield: Software status",
+            Color = new Color(Constants.AccentColour),
+            
+            Footer = new EmbedFooterBuilder
+            {
+                Text = $"Executed by {user.GetFullname()}",
+                IconUrl = user.GetAvatarUrl()
+            }
+        }.WithCurrentTimestamp();
+
+        foreach (var status in statuses)
+            embed.AddField(status.Name, status.Status, false);
 
         return embed.Build();
     }

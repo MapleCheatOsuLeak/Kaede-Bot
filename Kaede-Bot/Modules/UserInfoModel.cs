@@ -6,7 +6,7 @@ namespace Kaede_Bot.Modules;
 public class UserInfoModel
 {
     [JsonPropertyName("code")] public int Code { get; set; }
-    public int ID { get; set; }
+    public int UserID { get; set; }
     public string JoinedOn { get; set; }
     public List<SubscriptionModel> Subscriptions { get; set; }
 

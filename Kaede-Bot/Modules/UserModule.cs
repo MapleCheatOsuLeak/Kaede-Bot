@@ -47,11 +47,24 @@ public class UserModule : ModuleBase<SocketCommandContext>
             if (user != null)
             {
                 var response = await _httpClient.GetAsync($"https://maple.software/backend/api/discord?t=0&u={user.Id}");
-                var userinfo = await response.Content.ReadFromJsonAsync<UserInfoModel>();
-                if (userinfo!.Code == 0)
-                    await Context.Channel.SendMessageAsync(embed: _embedService.CreateUserInfoEmbed(user, userinfo));
+                if (response.IsSuccessStatusCode)
+                {
+                    var userinfo = await response.Content.ReadFromJsonAsync<UserInfoModel>();
+                    if (userinfo is { Code: 0 })
+                    {
+                        await Context.Channel.SendMessageAsync(
+                            embed: _embedService.CreateUserInfoEmbed(user, userinfo));
+                    }
+                    else
+                    {
+                        await Context.Channel.SendMessageAsync(embed: _embedService.CreateUserInfoEmbed(user, null));
+                    }
+                }
                 else
-                    await Context.Channel.SendMessageAsync(embed: _embedService.CreateUserInfoEmbed(user, null));
+                {
+                    await Context.Channel.SendMessageAsync(
+                        embed: _embedService.CreateUserInfoEmbed(user, null));
+                }
             }
             else
             {
@@ -64,5 +77,26 @@ public class UserModule : ModuleBase<SocketCommandContext>
             await Context.Channel.SendMessageAsync("",
                 embed: _embedService.CreateErrorEmbed(Context.User, "User info", "User not found!"));
         }
+    }
+    
+    [Command("status")]
+    [Summary("Shows software status.")]
+    public async Task Status()
+    {
+        var response = await _httpClient.GetAsync("https://maple.software/backend/api/discord?t=3");
+        if (response.IsSuccessStatusCode)
+        {
+            var status = await response.Content.ReadFromJsonAsync<SoftwareStatusModel>();
+            if (status != null)
+            {
+                await Context.Channel.SendMessageAsync(
+                    embed: _embedService.CreateSoftwareStatus(Context.User, status.Statuses));
+
+                return;
+            }
+        }
+
+        await Context.Channel.SendMessageAsync(embed: _embedService.CreateErrorEmbed(Context.User, "Software status",
+            "Failed to retrieve software status."));
     }
 }
