@@ -1,12 +1,14 @@
 ﻿using Discord;
 using Discord.Commands;
+using Discord.WebSocket;
 using Humanizer;
+using Kaede_Bot.Modules;
 
 namespace Kaede_Bot.Services;
 
 public class EmbedService
 {
-    public static Embed CreateInfoEmbed(IUser user, string title, string description)
+    public Embed CreateInfoEmbed(IUser user, string title, string description)
     {
         EmbedBuilder embed = new EmbedBuilder
         {
@@ -24,7 +26,7 @@ public class EmbedService
         return embed.Build();
     }
         
-    public static Embed CreateErrorEmbed(IUser user, string title, string description)
+    public Embed CreateErrorEmbed(IUser user, string title, string description)
     {
         EmbedBuilder embed = new EmbedBuilder
         {
@@ -292,6 +294,81 @@ public class EmbedService
                 builder.Value = argsExtended;
             });
         }
+
+        return embed.Build();
+    }
+
+    public Embed CreateUserInfoEmbed(SocketGuildUser user, UserInfoModel? userinfo)
+    {
+        bool canProvideMapleInfo = userinfo != null;
+        
+        string roles = string.Join(", ", user.Roles.ToList().OrderBy(r => r.Name).Select(r => string.Concat("`", r.Name, "`"))).Replace("`@everyone`, ", string.Empty).Replace("`@everyone`", string.Empty);
+        EmbedBuilder embed = new EmbedBuilder
+        {
+            Title = " ",
+            Description = user.Mention,
+            Author = new EmbedAuthorBuilder
+            {
+                Name = $"User information for {user.GetFullname()}",
+                IconUrl = user.GetAvatarUrl()
+            },
+            Color = new Color(Constants.AccentColour),
+            ThumbnailUrl = user.GetAvatarUrl(),
+            Fields = new List<EmbedFieldBuilder>
+            {
+                new()
+                {
+                    Name = "⠀",
+                    Value = "**Discord information**",
+                    IsInline = false
+                },
+                new()
+                {
+                    Name = "Registered on",
+                    Value = user.CreatedAt.GetHumanReadableString(),
+                    IsInline = true
+                },
+                new()
+                {
+                    Name = "Joined on",
+                    Value = user.JoinedAt.GetHumanReadableString(),
+                    IsInline = true
+                },
+                new()
+                {
+                    Name = "Roles",
+                    Value = string.IsNullOrEmpty(roles) ? "None" : roles,
+                    IsInline = false
+                },
+                new()
+                {
+                    Name = "⠀",
+                    Value = "**Maple information**",
+                    IsInline = false
+                }
+            },
+            Footer = new EmbedFooterBuilder
+            {
+                Text = $"ID: {user.Id}"
+            }
+
+        }.WithCurrentTimestamp();
+
+        if (canProvideMapleInfo)
+        {
+            embed.AddField("User ID", userinfo!.ID, true);
+            embed.AddField("Joined on", userinfo.JoinedOn, true);
+            embed.AddField("⠀", "**Subscriptions**", false);
+            if (userinfo.Subscriptions.Count > 0)
+            {
+                foreach (var subscription in userinfo.Subscriptions)
+                    embed.AddField(subscription.Name, subscription.Expiration == "lifetime" ? subscription.Expiration : $"Expires on {subscription.Expiration}", false);
+            }
+            else
+                embed.AddField("None", "Subscribe now at https://maple.software/dashboard/store", false);
+        }
+        else
+            embed.AddField("Your discord account is not linked!", "Link your account at https://maple.software/dashboard/settings to view more information!", false);
 
         return embed.Build();
     }

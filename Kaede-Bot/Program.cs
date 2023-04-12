@@ -67,6 +67,8 @@ class Program
     private ServiceProvider ConfigureServices()
     {
         var config = new ConfigurationManager("config.json");
+        var httpClient = new HttpClient();
+        httpClient.DefaultRequestHeaders.Add("User-Agent", "mapleserver/azuki is a cutie");
         
         return new ServiceCollection()
             .AddSingleton(new DiscordSocketConfig
@@ -83,6 +85,7 @@ class Program
             .AddSingleton<BugReportsService>()
             .AddSingleton<EmbedService>()
             .AddSingleton(config)
+            .AddSingleton(httpClient)
             .AddDbContext<KaedeDbContext>(options => options.UseSqlite($"Data Source={config.DatabasePath}"))
             .BuildServiceProvider();
     }
