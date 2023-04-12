@@ -11,6 +11,7 @@ public class CommandHandlingService
         private readonly CommandService _commands;
         private readonly DiscordSocketClient _discord;
         private readonly GPTService _gpt;
+        private readonly EmbedService _embedService;
         private readonly IServiceProvider _services;
 
         public CommandHandlingService(IServiceProvider services)
@@ -18,6 +19,7 @@ public class CommandHandlingService
             _commands = services.GetRequiredService<CommandService>();
             _discord = services.GetRequiredService<DiscordSocketClient>();
             _gpt = services.GetRequiredService<GPTService>();
+            _embedService = services.GetRequiredService<EmbedService>();
             _services = services;
             
             _commands.CommandExecuted += CommandExecutedAsync;
@@ -36,7 +38,13 @@ public class CommandHandlingService
             
             if (message.Source != MessageSource.User)
                 return;
-            
+
+            if (!(message.Author is SocketGuildUser))
+                return;
+
+            if (!(message.Channel is SocketTextChannel))
+                return;
+
             var argPos = 0;
             if (message.HasMentionPrefix(_discord.CurrentUser, ref argPos))
             {
@@ -61,12 +69,21 @@ public class CommandHandlingService
 
         public async Task CommandExecutedAsync(Optional<CommandInfo> command, ICommandContext context, IResult result)
         {
+            int length = context.Message.Content.IndexOf(' ');
+            length = length == -1 ? context.Message.Content.Length : length;
+            string commandString = context.Message.Content.Substring(0, length);
+            
             if (!command.IsSpecified)
-                return;
-            
-            if (result.IsSuccess)
-                return;
-            
-            await context.Channel.SendMessageAsync($"error: {result}");
+            {
+                await context.Channel.SendMessageAsync("",
+                    embed: _embedService.CreateErrorEmbed(context.User, "Command Handler",
+                        $"`{commandString}` command does not exist!\n\nType `!help` for a list of all commands."));
+            }
+            else if (!result.IsSuccess)
+            {
+                await context.Channel.SendMessageAsync("",
+                    embed: _embedService.CreateErrorEmbed(context.User, "Command Handler",
+                        $"An error occured while executing `{commandString}` command:\n\n`{result.ErrorReason}`"));
+            }
         }
     }
