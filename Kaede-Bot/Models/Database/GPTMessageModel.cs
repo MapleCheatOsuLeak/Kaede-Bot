@@ -1,6 +1,6 @@
-﻿namespace Kaede_Bot.Database;
+﻿namespace Kaede_Bot.Models.Database;
 
-public class GPTMessage
+public class GPTMessageModel
 {
     public Guid Id { get; set; }
     public ulong UserId { get; set; }

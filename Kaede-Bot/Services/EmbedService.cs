@@ -2,7 +2,7 @@
 using Discord.Commands;
 using Discord.WebSocket;
 using Humanizer;
-using Kaede_Bot.Modules;
+using Kaede_Bot.Models.Web;
 
 namespace Kaede_Bot.Services;
 

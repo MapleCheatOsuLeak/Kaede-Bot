@@ -1,7 +1,6 @@
 ﻿using System.Text.Json.Serialization;
-using Newtonsoft.Json;
 
-namespace Kaede_Bot.Modules;
+namespace Kaede_Bot.Models.Web;
 
 public class UserInfoModel
 {

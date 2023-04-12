@@ -2,7 +2,7 @@
 
 namespace Kaede_Bot;
 
-public class Constants
+public static class Constants
 {
     public static CultureInfo Culture = new("en-US");
     public static uint AccentColour = 0xE85D9B;

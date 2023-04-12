@@ -1,5 +1,4 @@
-﻿using Discord;
-using Discord.WebSocket;
+﻿using Discord.WebSocket;
 using Kaede_Bot.Configuration;
 
 namespace Kaede_Bot.Services;

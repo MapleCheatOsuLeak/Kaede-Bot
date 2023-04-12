@@ -2,9 +2,9 @@
 using System.Text.Json.Serialization;
 using Discord;
 using Discord.Commands;
-using Discord.WebSocket;
 using Kaede_Bot.Configuration;
 using Kaede_Bot.Database;
+using Kaede_Bot.Models.Database;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Kaede_Bot.Services;
@@ -85,7 +85,7 @@ public class GPTService
 
                 messages.Add(userMessage);
 
-                _kaedeDbContext.GPTMessages.Add(new GPTMessage
+                _kaedeDbContext.GPTMessages.Add(new GPTMessageModel
                 {
                     Id = Guid.NewGuid(),
                     UserId = context.User.Id,
@@ -111,7 +111,7 @@ public class GPTService
                 {
                     messages.Add(choices[0].Message);
 
-                    _kaedeDbContext.GPTMessages.Add(new GPTMessage
+                    _kaedeDbContext.GPTMessages.Add(new GPTMessageModel
                     {
                         Id = Guid.NewGuid(),
                         UserId = context.User.Id,

@@ -1,6 +1,7 @@
 ﻿using System.Net.Http.Json;
 using Discord;
 using Discord.Commands;
+using Kaede_Bot.Models.Web;
 using Kaede_Bot.Services;
 
 namespace Kaede_Bot.Modules;

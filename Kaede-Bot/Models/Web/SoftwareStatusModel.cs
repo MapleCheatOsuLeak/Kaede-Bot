@@ -1,6 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace Kaede_Bot.Modules;
+namespace Kaede_Bot.Models.Web;
 
 public class SoftwareStatusModel
 {
