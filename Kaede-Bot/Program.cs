@@ -72,7 +72,9 @@ class Program
             .AddSingleton(new DiscordSocketConfig
             {
                 AlwaysDownloadUsers = true,
-                GatewayIntents = GatewayIntents.All
+                GatewayIntents = GatewayIntents.Guilds | GatewayIntents.GuildMembers | GatewayIntents.GuildBans 
+                                 | GatewayIntents.GuildMessages | GatewayIntents.MessageContent 
+                                 | GatewayIntents.GuildMessageReactions | GatewayIntents.DirectMessageTyping
             })
             .AddSingleton<DiscordSocketClient>()
             .AddSingleton<DiscordRestClient>()
