@@ -2,6 +2,13 @@
   "Token": "",
   "DatabasePath": "kaede.db",
   "GuildId": 0,
+  "Activities": [
+    "@Kaede for help!",
+    "@Kaede to chat!",
+    "@Kaede for anything!",
+    "!help",
+    "maple.software"
+  ],
   "ServerRoles": {
     "PremiumRoleId": 0
   },

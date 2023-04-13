@@ -7,6 +7,7 @@ public class ConfigurationManager
     public string Token { get; private set; }
     public string DatabasePath { get; private set; }
     public ulong GuildId { get; private set; }
+    public List<string> Activities { get; private set; }
     public ServerRoles ServerRoles { get; private set; }
     public ServerChannels ServerChannels { get; private set; }
     public GPTModelConfiguration GPTModelConfiguration { get; private set; }
@@ -24,6 +25,7 @@ public class ConfigurationManager
         Token = config!.Token;
         DatabasePath = config.DatabasePath;
         GuildId = config.GuildId;
+        Activities = config.Activities;
         ServerRoles = config.ServerRoles;
         ServerChannels = config.ServerChannels;
         GPTModelConfiguration = config.GPTModelConfiguration;

@@ -32,32 +32,17 @@ class Program
         await client.LoginAsync(TokenType.Bot, config.Token);
         await client.StartAsync();
 
-        #pragma warning disable CS4014
-        Task.Run(async () =>
-        #pragma warning restore CS4014
-        {
-            string[] activities = { "@Kaede for help!", "@Kaede to chat!", "@Kaede for anything!", "!help", "maple.software" };
-            int i = 0;
-            while (true)
-            {
-                await client.SetActivityAsync(new Game(activities[i]));
-
-                i = i + 1 < activities.Length ? i + 1 : 0;
-
-                await Task.Delay(7500);
-            }
-            // ReSharper disable once FunctionNeverReturns
-        });
-
         await restClient.LoginAsync(TokenType.Bot, config.Token);
+
+        await services.GetRequiredService<ActivityService>().InitializeAsync();
             
+        await services.GetRequiredService<PremiumService>().InitializeAsync();
+        client.LatencyUpdated += services.GetRequiredService<PremiumService>().OnHeartbeat;
+        
         await services.GetRequiredService<CommandHandlingService>().InitializeAsync();
 
         await services.GetRequiredService<GPTService>().InitializeAsync();
 
-        await services.GetRequiredService<PremiumService>().InitializeAsync();
-        client.LatencyUpdated += services.GetRequiredService<PremiumService>().OnHeartbeat;
-            
         await Task.Delay(Timeout.Infinite);
     }
 
@@ -87,6 +72,7 @@ class Program
             .AddSingleton<BugReportsService>()
             .AddSingleton<EmbedService>()
             .AddSingleton<PremiumService>()
+            .AddSingleton<ActivityService>()
             .AddSingleton(config)
             .AddSingleton(httpClient)
             .AddDbContext<KaedeDbContext>(options => options.UseSqlite($"Data Source={config.DatabasePath}"))
