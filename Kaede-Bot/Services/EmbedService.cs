@@ -392,4 +392,16 @@ public class EmbedService
 
         return embed.Build();
     }
+    
+    public Embed CreateAnticheatUpdateEmbed(string gameName)
+    {
+        EmbedBuilder embed = new EmbedBuilder
+        {
+            Title = ":warning: New anticheat update",
+            Description = $"{gameName}'s anticheat has been updated!\nWe **strongly** recommend that you **do not** use Maple on {gameName} until it is confirmed undetected.\n\nFor more information, please visit https://maple.software/dashboard/status",
+            Color = new Color(Constants.WarningColour),
+        }.WithCurrentTimestamp();
+
+        return embed.Build();
+    }
 }

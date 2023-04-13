@@ -45,6 +45,9 @@ class Program
         
         await services.GetRequiredService<PremiumService>().InitializeAsync();
         client.LatencyUpdated += services.GetRequiredService<PremiumService>().OnHeartbeat;
+
+        await services.GetRequiredService<AnticheatWarningService>().InitializeAsync();
+        client.LatencyUpdated += services.GetRequiredService<AnticheatWarningService>().OnHeartbeat;
         
         client.ThreadCreated += services.GetRequiredService<SuggestionsService>().ClientOnThreadCreated;
         client.ThreadCreated += services.GetRequiredService<BugReportsService>().ClientOnThreadCreated;
@@ -81,6 +84,7 @@ class Program
             .AddSingleton<EmbedService>()
             .AddSingleton<PremiumService>()
             .AddSingleton<ActivityService>()
+            .AddSingleton<AnticheatWarningService>()
             .AddSingleton(config)
             .AddSingleton(httpClient)
             .AddDbContext<KaedeDbContext>(options => options.UseSqlite($"Data Source={config.DatabasePath}"))
