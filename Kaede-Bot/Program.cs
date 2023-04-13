@@ -16,47 +16,49 @@ class Program
 
     private async Task MainAsync()
     {
-        await using (var services = ConfigureServices())
+        await using var services = ConfigureServices();
+        
+        var config = services.GetRequiredService<ConfigurationManager>();
+            
+        var client = services.GetRequiredService<DiscordSocketClient>();    
+        var restClient = services.GetRequiredService<DiscordRestClient>();
+            
+        client.ThreadCreated += services.GetRequiredService<SuggestionsService>().ClientOnThreadCreated;
+        client.ThreadCreated += services.GetRequiredService<BugReportsService>().ClientOnThreadCreated;
+            
+        client.Log += LogAsync;
+        services.GetRequiredService<CommandService>().Log += LogAsync;
+            
+        await client.LoginAsync(TokenType.Bot, config.Token);
+        await client.StartAsync();
+
+        #pragma warning disable CS4014
+        Task.Run(async () =>
+        #pragma warning restore CS4014
         {
-            var config = services.GetRequiredService<ConfigurationManager>();
-            
-            var client = services.GetRequiredService<DiscordSocketClient>();    
-            var restClient = services.GetRequiredService<DiscordRestClient>();
-            
-            client.ThreadCreated += services.GetRequiredService<SuggestionsService>().ClientOnThreadCreated;
-            client.ThreadCreated += services.GetRequiredService<BugReportsService>().ClientOnThreadCreated;
-
-            client.Log += LogAsync;
-            services.GetRequiredService<CommandService>().Log += LogAsync;
-            
-            await client.LoginAsync(TokenType.Bot, config.Token);
-            await client.StartAsync();
-
-            #pragma warning disable CS4014
-            Task.Run(async () =>
-            #pragma warning restore CS4014
+            string[] activities = { "@Kaede for help!", "@Kaede to chat!", "@Kaede for anything!", "!help", "maple.software" };
+            int i = 0;
+            while (true)
             {
-                string[] activities = { "@Kaede for help!", "@Kaede to chat!", "@Kaede for anything!", "!help", "maple.software" };
-                int i = 0;
-                while (true)
-                {
-                    await client.SetActivityAsync(new Game(activities[i]));
+                await client.SetActivityAsync(new Game(activities[i]));
 
-                    i = i + 1 < activities.Length ? i + 1 : 0;
+                i = i + 1 < activities.Length ? i + 1 : 0;
 
-                    await Task.Delay(7500);
-                }
-                // ReSharper disable once FunctionNeverReturns
-            });
+                await Task.Delay(7500);
+            }
+            // ReSharper disable once FunctionNeverReturns
+        });
 
-            await restClient.LoginAsync(TokenType.Bot, config.Token);
+        await restClient.LoginAsync(TokenType.Bot, config.Token);
             
-            await services.GetRequiredService<CommandHandlingService>().InitializeAsync();
+        await services.GetRequiredService<CommandHandlingService>().InitializeAsync();
 
-            await services.GetRequiredService<GPTService>().InitializeAsync();
+        await services.GetRequiredService<GPTService>().InitializeAsync();
+
+        await services.GetRequiredService<PremiumService>().InitializeAsync();
+        client.LatencyUpdated += services.GetRequiredService<PremiumService>().OnHeartbeat;
             
-            await Task.Delay(Timeout.Infinite);
-        }
+        await Task.Delay(Timeout.Infinite);
     }
 
     private async Task LogAsync(LogMessage msg)
@@ -84,6 +86,7 @@ class Program
             .AddSingleton<SuggestionsService>()
             .AddSingleton<BugReportsService>()
             .AddSingleton<EmbedService>()
+            .AddSingleton<PremiumService>()
             .AddSingleton(config)
             .AddSingleton(httpClient)
             .AddDbContext<KaedeDbContext>(options => options.UseSqlite($"Data Source={config.DatabasePath}"))

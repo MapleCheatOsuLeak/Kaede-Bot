@@ -1,6 +1,10 @@
 ﻿{
   "Token": "",
   "DatabasePath": "kaede.db",
+  "GuildId": 0,
+  "ServerRoles": {
+    "PremiumRoleId": 0
+  },
   "ServerChannels": {
     "ActionLogsChannelId": 0,
     "SuggestionsChannelId": 0,

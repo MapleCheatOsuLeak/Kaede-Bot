@@ -47,7 +47,7 @@ public class UserModule : ModuleBase<SocketCommandContext>
             var user = Context.Guild.GetUser(userId);
             if (user != null)
             {
-                var response = await _httpClient.GetAsync($"https://maple.software/backend/api/discord?t=0&u={user.Id}");
+                var response = await _httpClient.GetAsync($"https://maple.software/backend/api/discordv2?t=0&u={user.Id}");
                 if (response.IsSuccessStatusCode)
                 {
                     var userinfo = await response.Content.ReadFromJsonAsync<UserInfoModel>();
@@ -84,7 +84,7 @@ public class UserModule : ModuleBase<SocketCommandContext>
     [Summary("Shows software status.")]
     public async Task Status()
     {
-        var response = await _httpClient.GetAsync("https://maple.software/backend/api/discord?t=3");
+        var response = await _httpClient.GetAsync("https://maple.software/backend/api/discordv2?t=3");
         if (response.IsSuccessStatusCode)
         {
             var status = await response.Content.ReadFromJsonAsync<SoftwareStatusModel>();
