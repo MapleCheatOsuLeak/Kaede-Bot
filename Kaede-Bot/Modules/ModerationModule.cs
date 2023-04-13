@@ -38,6 +38,11 @@ public class ModerationModule : ModuleBase<SocketCommandContext>
             await actionLogsChannel.SendMessageAsync(embed: _embedService.CreateModActionEmbed(Context.User, "Ban",
                 $"User {restUser.GetFullname()} ({restUser.Id}) has been banned, prune days: {pruneDays}.", reason));
         }
+        else
+        {
+            await Context.Channel.SendMessageAsync("",
+                embed: _embedService.CreateErrorEmbed(Context.User, "Ban", "User not found!"));
+        }
     }
     
     [Command("unban"), RequireUserPermission(GuildPermission.BanMembers)]
@@ -54,6 +59,11 @@ public class ModerationModule : ModuleBase<SocketCommandContext>
             var actionLogsChannel = Context.Guild.GetTextChannel(_actionLogsChannelId);
             await actionLogsChannel.SendMessageAsync(embed: _embedService.CreateModActionEmbed(Context.User, "Unban",
                 $"User {restUser.GetFullname()} ({restUser.Id}) has been unbanned.", reason));
+        }
+        else
+        {
+            await Context.Channel.SendMessageAsync("",
+                embed: _embedService.CreateErrorEmbed(Context.User, "Unban", "User not found!"));
         }
     }
     
@@ -74,6 +84,16 @@ public class ModerationModule : ModuleBase<SocketCommandContext>
                 await actionLogsChannel.SendMessageAsync(embed: _embedService.CreateModActionEmbed(Context.User, "Kick",
                     $"User {user.GetFullname()} ({user.Id}) has been kicked.", reason));
             }
+            else
+            {
+                await Context.Channel.SendMessageAsync("",
+                    embed: _embedService.CreateErrorEmbed(Context.User, "Kick", "User not found!"));
+            }
+        }
+        else
+        {
+            await Context.Channel.SendMessageAsync("",
+                embed: _embedService.CreateErrorEmbed(Context.User, "Kick", "User not found!"));
         }
     }
     
@@ -96,7 +116,22 @@ public class ModerationModule : ModuleBase<SocketCommandContext>
                     await actionLogsChannel.SendMessageAsync(embed: _embedService.CreateModActionEmbed(Context.User, "Mute",
                         $"User {user.GetFullname()} ({user.Id}) has been muted for {time.Humanize(3, Constants.Culture)}", reason));
                 }
+                else
+                {
+                    await Context.Channel.SendMessageAsync("",
+                        embed: _embedService.CreateErrorEmbed(Context.User, "Mute", "Failed to parse mute duration!"));
+                }
             }
+            else
+            {
+                await Context.Channel.SendMessageAsync("",
+                    embed: _embedService.CreateErrorEmbed(Context.User, "Mute", "User not found!"));
+            }
+        }
+        else
+        {
+            await Context.Channel.SendMessageAsync("",
+                embed: _embedService.CreateErrorEmbed(Context.User, "Mute", "User not found!"));
         }
     }
     
@@ -117,6 +152,16 @@ public class ModerationModule : ModuleBase<SocketCommandContext>
                 await actionLogsChannel.SendMessageAsync(embed: _embedService.CreateModActionEmbed(Context.User, "Unmute",
                     $"User {user.GetFullname()} ({user.Id}) has been unmuted.", reason));
             }
+            else
+            {
+                await Context.Channel.SendMessageAsync("",
+                    embed: _embedService.CreateErrorEmbed(Context.User, "Unmute", "User not found!"));
+            }
+        }
+        else
+        {
+            await Context.Channel.SendMessageAsync("",
+                embed: _embedService.CreateErrorEmbed(Context.User, "Unmute", "User not found!"));
         }
     }
     
