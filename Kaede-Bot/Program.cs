@@ -22,28 +22,36 @@ class Program
             
         var client = services.GetRequiredService<DiscordSocketClient>();    
         var restClient = services.GetRequiredService<DiscordRestClient>();
-            
-        client.ThreadCreated += services.GetRequiredService<SuggestionsService>().ClientOnThreadCreated;
-        client.ThreadCreated += services.GetRequiredService<BugReportsService>().ClientOnThreadCreated;
-            
+
         client.Log += LogAsync;
         services.GetRequiredService<CommandService>().Log += LogAsync;
+        
+        // ReSharper disable once AccessToDisposedClosure
+        client.Ready += async () => await Ready(services);
             
         await client.LoginAsync(TokenType.Bot, config.Token);
         await client.StartAsync();
 
         await restClient.LoginAsync(TokenType.Bot, config.Token);
+        
+        await Task.Delay(Timeout.Infinite);
+    }
 
+    private async Task Ready(IServiceProvider services)
+    {
+        var client = services.GetRequiredService<DiscordSocketClient>(); 
+        
         await services.GetRequiredService<ActivityService>().InitializeAsync();
-            
+        
         await services.GetRequiredService<PremiumService>().InitializeAsync();
         client.LatencyUpdated += services.GetRequiredService<PremiumService>().OnHeartbeat;
+        
+        client.ThreadCreated += services.GetRequiredService<SuggestionsService>().ClientOnThreadCreated;
+        client.ThreadCreated += services.GetRequiredService<BugReportsService>().ClientOnThreadCreated;
         
         await services.GetRequiredService<CommandHandlingService>().InitializeAsync();
 
         await services.GetRequiredService<GPTService>().InitializeAsync();
-
-        await Task.Delay(Timeout.Infinite);
     }
 
     private async Task LogAsync(LogMessage msg)
