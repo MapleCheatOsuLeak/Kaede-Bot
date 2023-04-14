@@ -16,6 +16,7 @@
   "ServerChannels": {
     "ActionLogsChannelId": 0,
     "AnticheatUpdatesChannelId": 0,
+    "SupportChannelId": 0,
     "SuggestionsChannelId": 0,
     "BugReportsChannelId": 0
   },

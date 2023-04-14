@@ -18,10 +18,9 @@ public class EmbedService
             Color = new Color(Constants.AccentColour),
             Footer = new EmbedFooterBuilder
             {
-                Text = $"Triggered by {user.GetFullname()}",
+                Text = $"Executed by {user.GetFullname()}",
                 IconUrl = user.GetAvatarUrl()
             }
-
         }.WithCurrentTimestamp();
 
         return embed.Build();
@@ -36,10 +35,9 @@ public class EmbedService
             Color = new Color(Constants.ErrorColour),
             Footer = new EmbedFooterBuilder
             {
-                Text = $"Triggered by {user.GetFullname()}",
+                Text = $"Executed by {user.GetFullname()}",
                 IconUrl = user.GetAvatarUrl()
             }
-
         }.WithCurrentTimestamp();
 
         return embed.Build();
@@ -510,11 +508,70 @@ public class EmbedService
         {
             foreach (var giveaway in giveaways)
             {
-                embed.AddField($"Id: {giveaway.Id.ToString()}", $"**Prize:** {giveaway.Prize}\n**Winners:** {giveaway.WinnerCount}\n**Ends:** <t:{new DateTimeOffset(giveaway.EndsAt.ToUniversalTime()).ToUnixTimeSeconds()}:R>\n**Host Id:** {giveaway.HostId}\n**Creator Id:** {giveaway.CreatorId}");
+                embed.AddField($"Id: {giveaway.Id.ToString()}", $"**Prize:** {giveaway.Prize}\n**Winners:** {giveaway.WinnerCount}\n**Ends:** <t:{new DateTimeOffset(giveaway.EndsAt).ToUnixTimeSeconds()}:R>\n**Host Id:** {giveaway.HostId}\n**Creator Id:** {giveaway.CreatorId}");
             }
         }
         else
             embed.WithDescription("None yet!");
+
+        return embed.Build();
+    }
+    
+    public Embed CreateKudosSendEmbed(IUser sender, IUser recipient)
+    {
+        EmbedBuilder embed = new EmbedBuilder
+        {
+            Title = $":two_hearts: Kudos",
+            Description = $"Successfully sent kudos to {recipient.GetFullname()}!",
+            Color = new Color(Constants.AccentColour),
+            Footer = new EmbedFooterBuilder
+            {
+                Text = $"Executed by {sender.GetFullname()}",
+                IconUrl = sender.GetAvatarUrl()
+            }
+        }.WithCurrentTimestamp();
+
+        return embed.Build();
+    }
+    
+    public Embed CreateKudosShowEmbed(IUser user, int kudos)
+    {
+        EmbedBuilder embed = new EmbedBuilder
+        {
+            Title = $":two_hearts: Kudos Count",
+            Description = $"You can get more kudos by helping people!",
+            Color = new Color(Constants.AccentColour),
+            Fields = new List<EmbedFieldBuilder>
+            {
+                new()
+                {
+                    Name = "You currently have",
+                    Value = $"{kudos} kudos"
+                }
+            },
+            Footer = new EmbedFooterBuilder
+            {
+                Text = $"Executed by {user.GetFullname()}",
+                IconUrl = user.GetAvatarUrl()
+            }
+        }.WithCurrentTimestamp();
+
+        return embed.Build();
+    }
+    
+    public Embed CreateKudosLeaderboardEmbed(IUser user, string leaderboard)
+    {
+        EmbedBuilder embed = new EmbedBuilder
+        {
+            Title = ":two_hearts: Kudos Leaderboard",
+            Description = leaderboard,
+            Footer = new EmbedFooterBuilder
+            {
+                Text = $"Executed by {user.GetFullname()}",
+                IconUrl = user.GetAvatarUrl()
+            },
+            Color = new Color(Constants.AccentColour),
+        }.WithCurrentTimestamp();
 
         return embed.Build();
     }

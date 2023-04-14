@@ -1,6 +1,7 @@
 ﻿using System.Net.Http.Json;
 using Discord;
 using Discord.Commands;
+using Discord.Rest;
 using Kaede_Bot.Models.Web;
 using Kaede_Bot.Services;
 
@@ -9,13 +10,17 @@ namespace Kaede_Bot.Modules;
 public class UserModule : ModuleBase<SocketCommandContext>
 {
     private readonly HttpClient _httpClient;
+    private readonly DiscordRestClient _restClient;
     private readonly CommandService _commandService;
+    private readonly KudosService _kudosService;
     private readonly EmbedService _embedService;
     
-    public UserModule(HttpClient httpClient, CommandService commandService, EmbedService embedService)
+    public UserModule(HttpClient httpClient, DiscordRestClient restClient, CommandService commandService, KudosService kudosService, EmbedService embedService)
     {
         _httpClient = httpClient;
+        _restClient = restClient;
         _commandService = commandService;
+        _kudosService = kudosService;
         _embedService = embedService;
     }
     
@@ -25,13 +30,11 @@ public class UserModule : ModuleBase<SocketCommandContext>
     {
         if (string.IsNullOrEmpty(commandName))
         {
-            await Context.Channel.SendMessageAsync("",
-                embed: _embedService.CreateHelpListEmbed(Context.User, _commandService));
+            await Context.Channel.SendMessageAsync(embed: _embedService.CreateHelpListEmbed(Context.User, _commandService));
         }
         else
         {
-            await Context.Channel.SendMessageAsync("",
-                embed: _embedService.CreateHelpCommandEmbed(Context.User, _commandService, commandName));
+            await Context.Channel.SendMessageAsync(embed: _embedService.CreateHelpCommandEmbed(Context.User, _commandService, commandName));
         }
     }
     
@@ -53,8 +56,7 @@ public class UserModule : ModuleBase<SocketCommandContext>
                     var userinfo = await response.Content.ReadFromJsonAsync<UserInfoModel>();
                     if (userinfo is { Code: 0 })
                     {
-                        await Context.Channel.SendMessageAsync(
-                            embed: _embedService.CreateUserInfoEmbed(user, userinfo));
+                        await Context.Channel.SendMessageAsync(embed: _embedService.CreateUserInfoEmbed(user, userinfo));
                     }
                     else
                     {
@@ -63,25 +65,22 @@ public class UserModule : ModuleBase<SocketCommandContext>
                 }
                 else
                 {
-                    await Context.Channel.SendMessageAsync(
-                        embed: _embedService.CreateUserInfoEmbed(user, null));
+                    await Context.Channel.SendMessageAsync(embed: _embedService.CreateUserInfoEmbed(user, null));
                 }
             }
             else
             {
-                await Context.Channel.SendMessageAsync("",
-                    embed: _embedService.CreateErrorEmbed(Context.User, "User info", "User not found!"));
+                await Context.Channel.SendMessageAsync(embed: _embedService.CreateErrorEmbed(Context.User, "User info", "User not found!"));
             }
         }
         else
         {
-            await Context.Channel.SendMessageAsync("",
-                embed: _embedService.CreateErrorEmbed(Context.User, "User info", "User not found!"));
+            await Context.Channel.SendMessageAsync(embed: _embedService.CreateErrorEmbed(Context.User, "User info", "User not found!"));
         }
     }
     
     [Command("status")]
-    [Summary("Shows software status.")]
+    [Summary("Shows software status")]
     public async Task Status()
     {
         var response = await _httpClient.GetAsync("https://maple.software/backend/api/discordv2?t=3");
@@ -90,14 +89,74 @@ public class UserModule : ModuleBase<SocketCommandContext>
             var status = await response.Content.ReadFromJsonAsync<SoftwareStatusModel>();
             if (status != null)
             {
-                await Context.Channel.SendMessageAsync(
-                    embed: _embedService.CreateSoftwareStatus(Context.User, status.Statuses));
+                await Context.Channel.SendMessageAsync(embed: _embedService.CreateSoftwareStatus(Context.User, status.Statuses));
 
                 return;
             }
         }
 
-        await Context.Channel.SendMessageAsync(embed: _embedService.CreateErrorEmbed(Context.User, "Software status",
-            "Failed to retrieve software status."));
+        await Context.Channel.SendMessageAsync(embed: _embedService.CreateErrorEmbed(Context.User, "Software status", "Failed to retrieve software status."));
+    }
+
+    [Command("kudos send")]
+    [Summary("Sends kudos to the specified user. Limited to one kudos per user per 24 hours")]
+    public async Task KudosSend([Summary("Mention or id of a user")] string mentionOrId)
+    {
+        if (ulong.TryParse(mentionOrId, out var userId) || MentionUtils.TryParseUser(mentionOrId, out userId))
+        {
+            var user = Context.Guild.GetUser(userId);
+            if (user != null)
+            {
+                if (user.Id != Context.User.Id)
+                {
+                    if (_kudosService.CanSendKudos(Context.User, user))
+                    {
+                        await _kudosService.SendKudos(Context.User, user);
+
+                        await Context.Channel.SendMessageAsync(embed: _embedService.CreateKudosSendEmbed(Context.User, user));
+                    }
+                    else
+                    {
+                        await Context.Channel.SendMessageAsync(embed: _embedService.CreateErrorEmbed(Context.User, "Kudos", $"You can't send kudos to this user yet!\nYou'll be able to send kudos <t:{(new DateTimeOffset(_kudosService.GetKudosCooldown(Context.User, user))).ToUnixTimeSeconds()}:R>"));
+                    }
+                }
+                else
+                {
+                    await Context.Channel.SendMessageAsync(embed: _embedService.CreateErrorEmbed(Context.User, "Kudos", "You can't send kudos to yourself!"));
+                }
+            }
+            else
+            {
+                await Context.Channel.SendMessageAsync(embed: _embedService.CreateErrorEmbed(Context.User, "Kudos", "User not found!"));
+            }
+        }
+        else
+        {
+            await Context.Channel.SendMessageAsync(embed: _embedService.CreateErrorEmbed(Context.User, "Kudos", "User not found!"));
+        }
+    }
+
+    [Command("kudos show")]
+    [Summary("Shows your kudos count")]
+    public async Task KudosShow()
+    {
+        await Context.Channel.SendMessageAsync(embed: _embedService.CreateKudosShowEmbed(Context.User, _kudosService.GetUserKudos(Context.User)));
+    }
+    
+    [Command("kudos leaderboard")]
+    [Summary("Shows kudos leaderboard")]
+    public async Task KudosLeaderboard()
+    {
+        List<string> leaderboard = new();
+        var highestKudos = _kudosService.GetAllKudos().OrderBy(k => k.Kudos).Reverse().Take(10).ToList();
+        for (int i = 0; i < highestKudos.Count; i++)
+        {
+            var kudos = highestKudos[i];
+            var user = await _restClient.GetUserAsync(kudos.UserId);
+            
+            leaderboard.Add($"**{i + 1}. {(user == null ? "Unknown user" : user.GetFullname())}** - {kudos.Kudos} kudos");
+        }
+        
+        await Context.Channel.SendMessageAsync(embed: _embedService.CreateKudosLeaderboardEmbed(Context.User, leaderboard.Any() ? string.Join("\n", leaderboard) : "Nothing here yet!"));
     }
 }

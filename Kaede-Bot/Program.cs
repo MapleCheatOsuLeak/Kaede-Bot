@@ -55,6 +55,8 @@ class Program
         client.ThreadCreated += services.GetRequiredService<SuggestionsService>().ClientOnThreadCreated;
         client.ThreadCreated += services.GetRequiredService<BugReportsService>().ClientOnThreadCreated;
         
+        client.ThreadUpdated += services.GetRequiredService<KudosService>().ClientOnThreadUpdated;
+        
         await services.GetRequiredService<CommandHandlingService>().InitializeAsync();
 
         await services.GetRequiredService<GPTService>().InitializeAsync();
@@ -91,6 +93,7 @@ class Program
             .AddSingleton<ActivityService>()
             .AddSingleton<AnticheatWarningService>()
             .AddSingleton<GiveawayService>()
+            .AddSingleton<KudosService>()
             .AddSingleton(config)
             .AddSingleton(httpClient)
             .AddDbContext<KaedeDbContext>(options => options.UseSqlite($"Data Source={config.DatabasePath}"))
