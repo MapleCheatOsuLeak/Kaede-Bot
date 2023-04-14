@@ -10,7 +10,8 @@
     "maple.software"
   ],
   "ServerRoles": {
-    "PremiumRoleId": 0
+    "PremiumRoleId": 0,
+    "GiveawaysRoleId": 0
   },
   "ServerChannels": {
     "ActionLogsChannelId": 0,

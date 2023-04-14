@@ -1,4 +1,5 @@
 ﻿using System.Net.Http.Json;
+using Discord;
 using Discord.WebSocket;
 using Kaede_Bot.Configuration;
 using Kaede_Bot.Models.Web;
@@ -38,22 +39,19 @@ public class PremiumService
             return;
 
         var subscribers = subscribersModel.Subscribers.Select(ulong.Parse);
-        await foreach (var users in _guild.GetUsersAsync())
+        foreach (var user in await _guild.GetUsersAsync().FlattenAsync())
         {
-            foreach (var user in users)
-            {
-                if (user is not SocketGuildUser guildUser)
+            if (user is not SocketGuildUser guildUser)
                     continue;
 
-                // ReSharper disable once PossibleMultipleEnumeration
-                bool isSubscribed = subscribers.Any(s => s == user.Id);
-                bool hasPremiumRole = guildUser.Roles.Any(r => r.Id == _premiumRoleId);
+            // ReSharper disable once PossibleMultipleEnumeration
+            bool isSubscribed = subscribers.Any(s => s == user.Id);
+            bool hasPremiumRole = guildUser.Roles.Any(r => r.Id == _premiumRoleId);
 
-                if (isSubscribed && !hasPremiumRole)
-                    await guildUser.AddRoleAsync(_premiumRoleId);
-                else if (!isSubscribed && hasPremiumRole)
-                    await guildUser.RemoveRoleAsync(_premiumRoleId);
-            }
+            if (isSubscribed && !hasPremiumRole)
+                await guildUser.AddRoleAsync(_premiumRoleId);
+            else if (!isSubscribed && hasPremiumRole)
+                await guildUser.RemoveRoleAsync(_premiumRoleId);
         }
     }
 }

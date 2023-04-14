@@ -2,6 +2,7 @@
 using Discord.Commands;
 using Discord.WebSocket;
 using Humanizer;
+using Kaede_Bot.Models.Database;
 using Kaede_Bot.Models.Web;
 
 namespace Kaede_Bot.Services;
@@ -212,9 +213,17 @@ public class EmbedService
     public Embed CreateHelpListEmbed(IUser user, CommandService commandService)
     {
         List<CommandInfo> commands = commandService.Commands.ToList();
+        List<CommandInfo> giveawayCommands = new();
         List<CommandInfo> moderationCommands = new();
         foreach (var command in commands)
         {
+            if (command.Name.StartsWith("giveaway"))
+            {
+                giveawayCommands.Add(command);
+                
+                continue;
+            }
+            
             foreach (var precondition in command.Preconditions)
             {
                 if (precondition is RequireUserPermissionAttribute)
@@ -226,7 +235,7 @@ public class EmbedService
             }
         }
         
-        commands = commands.Except(moderationCommands).ToList();
+        commands = commands.Except(giveawayCommands).Except(moderationCommands).ToList();
 
         EmbedBuilder embed = new EmbedBuilder
         {
@@ -239,6 +248,11 @@ public class EmbedService
                 {
                     Name = "Commands",
                     Value = string.Join(", ", commands.OrderBy(c => c.Name).Select(c => string.Concat("`", c.Name, "`")))
+                },
+                new()
+                {
+                    Name = "Giveaway Commands",
+                    Value = string.Join(", ", giveawayCommands.OrderBy(c => c.Name).Select(c => string.Concat("`", c.Name, "`")))
                 },
                 new()
                 {
@@ -401,6 +415,106 @@ public class EmbedService
             Description = $"{gameName}'s anticheat has been updated!\nWe **strongly** recommend that you **do not** use Maple on {gameName} until it is confirmed undetected.\n\nFor more information, please visit https://maple.software/dashboard/status",
             Color = new Color(Constants.WarningColour),
         }.WithCurrentTimestamp();
+
+        return embed.Build();
+    }
+
+    public Embed CreateGiveawayStartEmbed(IUser host, DateTimeOffset endsAt, int winnerCount, string prize)
+    {
+        EmbedBuilder embed = new EmbedBuilder
+        {
+            Title = $"{prize} giveaway!",
+            Description = "React with :gift: to participate!",
+            Fields = new List<EmbedFieldBuilder>
+            {
+                new()
+                {
+                    Name = "Winners",
+                    Value = winnerCount,
+                    IsInline = false
+                },
+                new()
+                {
+                    Name = "Ends",
+                    Value = $"<t:{endsAt.ToUnixTimeSeconds()}:R>",
+                    IsInline = false
+                }
+            },
+            Footer = new EmbedFooterBuilder
+            {
+                Text = $"Hosted by {host.GetFullname()}",
+                IconUrl = host.GetAvatarUrl()
+            },
+            Color = new Color(Constants.AccentColour),
+        };
+
+        return embed.Build();
+    }
+    
+    public Embed CreateGiveawayEndEmbed(IUser host, string prize, List<IUser> winners)
+    {
+        EmbedBuilder embed = new EmbedBuilder
+        {
+            Title = $"{prize} giveaway ended!",
+            Description = "Thanks to everyone who participated!",
+            Fields = new List<EmbedFieldBuilder>
+            {
+                new()
+                {
+                    Name = winners.Count > 1 ? "Winners" : "Winner",
+                    Value = string.Join(", ", winners.Select(w => w.Mention))
+                }
+            },
+            Footer = new EmbedFooterBuilder
+            {
+                Text = $"Hosted by {host.GetFullname()}",
+                IconUrl = host.GetAvatarUrl()
+            },
+            Color = new Color(Constants.AccentColour),
+        };
+
+        return embed.Build();
+    }
+    
+    public Embed CreateGiveawayFailedEmbed(IUser host, string prize)
+    {
+        EmbedBuilder embed = new EmbedBuilder
+        {
+            Title = $"{prize} giveaway failed...",
+            Description = "Not enough participants :(",
+            Footer = new EmbedFooterBuilder
+            {
+                Text = $"Hosted by {host.GetFullname()}",
+                IconUrl = host.GetAvatarUrl()
+            },
+            Color = new Color(Constants.AccentColour),
+        };
+
+        return embed.Build();
+    }
+    
+    public Embed CreateGiveawayListEmbed(IUser user, List<GiveawayModel> giveaways)
+    {
+        EmbedBuilder embed = new EmbedBuilder
+        {
+            Title = ":gift: Giveaways",
+            Footer = new EmbedFooterBuilder
+            {
+                Text = $"Executed by {user.GetFullname()}",
+                IconUrl = user.GetAvatarUrl()
+            },
+            Color = new Color(Constants.AccentColour),
+        }.WithCurrentTimestamp();
+
+        if (giveaways.Any())
+        {
+            foreach (var giveaway in giveaways)
+            {
+                embed.AddField($"Id: {giveaway.Id.ToString()}", $"**Prize:** {giveaway.Prize}\n**Winners:** {giveaway.WinnerCount}\n**Ends:** <t:{new DateTimeOffset(giveaway.EndsAt.ToUniversalTime()).ToUnixTimeSeconds()}:R>\n**Host Id:** {giveaway.HostId}\n**Creator Id:** {giveaway.CreatorId}");
+            }
+        }
+        else
+            embed.WithDescription("None yet!");
 
         return embed.Build();
     }

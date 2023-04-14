@@ -6,6 +6,7 @@ namespace Kaede_Bot.Database;
 public class KaedeDbContext : DbContext
 {
     public DbSet<GPTMessageModel> GPTMessages { get; set; }
+    public DbSet<GiveawayModel> Giveaways { get; set; }
 
     public KaedeDbContext(DbContextOptions<KaedeDbContext> options) : base(options)
     {
