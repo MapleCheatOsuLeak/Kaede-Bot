@@ -47,6 +47,9 @@ public class GPTService
         if (context.Message.Content[promptPos..].Trim().Length <= 0)
             return;
 
+        if (_kaedeDbContext.GPTMessages.Count(m => m.Role == "user" && m.Timestamp.AddMinutes(3) > DateTime.UtcNow) >= 3)
+            return;
+
         await PromptAsyncLock.WaitAsync();
 
         try
