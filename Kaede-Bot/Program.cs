@@ -12,22 +12,23 @@ namespace Kaede_Bot;
 
 class Program
 {
+    private ServiceProvider _services = null!;
+    
     public static void Main(string[] args) => new Program().MainAsync().GetAwaiter().GetResult();
 
     private async Task MainAsync()
     {
-        await using var services = ConfigureServices();
+        _services = ConfigureServices();
         
-        var config = services.GetRequiredService<ConfigurationManager>();
+        var config = _services.GetRequiredService<ConfigurationManager>();
             
-        var client = services.GetRequiredService<DiscordSocketClient>();    
-        var restClient = services.GetRequiredService<DiscordRestClient>();
+        var client = _services.GetRequiredService<DiscordSocketClient>();    
+        var restClient = _services.GetRequiredService<DiscordRestClient>();
 
         client.Log += LogAsync;
-        services.GetRequiredService<CommandService>().Log += LogAsync;
+        _services.GetRequiredService<CommandService>().Log += LogAsync;
         
-        // ReSharper disable once AccessToDisposedClosure
-        client.Ready += async () => await Ready(services);
+        client.Ready += Ready;
             
         await client.LoginAsync(TokenType.Bot, config.Token);
         await client.StartAsync();
@@ -37,29 +38,31 @@ class Program
         await Task.Delay(Timeout.Infinite);
     }
 
-    private async Task Ready(IServiceProvider services)
+    private async Task Ready()
     {
-        var client = services.GetRequiredService<DiscordSocketClient>(); 
+        var client = _services.GetRequiredService<DiscordSocketClient>(); 
         
-        await services.GetRequiredService<ActivityService>().InitializeAsync();
+        await _services.GetRequiredService<ActivityService>().InitializeAsync();
         
-        await services.GetRequiredService<PremiumService>().InitializeAsync();
-        client.LatencyUpdated += services.GetRequiredService<PremiumService>().OnHeartbeat;
+        await _services.GetRequiredService<PremiumService>().InitializeAsync();
+        client.LatencyUpdated += _services.GetRequiredService<PremiumService>().OnHeartbeat;
 
-        await services.GetRequiredService<AnticheatWarningService>().InitializeAsync();
-        client.LatencyUpdated += services.GetRequiredService<AnticheatWarningService>().OnHeartbeat;
+        await _services.GetRequiredService<AnticheatWarningService>().InitializeAsync();
+        client.LatencyUpdated += _services.GetRequiredService<AnticheatWarningService>().OnHeartbeat;
         
-        await services.GetRequiredService<GiveawayService>().InitializeAsync();
-        client.LatencyUpdated += services.GetRequiredService<GiveawayService>().OnHeartbeat;
+        await _services.GetRequiredService<GiveawayService>().InitializeAsync();
+        client.LatencyUpdated += _services.GetRequiredService<GiveawayService>().OnHeartbeat;
         
-        client.ThreadCreated += services.GetRequiredService<SuggestionsService>().ClientOnThreadCreated;
-        client.ThreadCreated += services.GetRequiredService<BugReportsService>().ClientOnThreadCreated;
+        client.ThreadCreated += _services.GetRequiredService<SuggestionsService>().ClientOnThreadCreated;
+        client.ThreadCreated += _services.GetRequiredService<BugReportsService>().ClientOnThreadCreated;
         
-        client.ThreadUpdated += services.GetRequiredService<KudosService>().ClientOnThreadUpdated;
+        client.ThreadUpdated += _services.GetRequiredService<KudosService>().ClientOnThreadUpdated;
         
-        await services.GetRequiredService<CommandHandlingService>().InitializeAsync();
+        await _services.GetRequiredService<CommandHandlingService>().InitializeAsync();
 
-        await services.GetRequiredService<GPTService>().InitializeAsync();
+        await _services.GetRequiredService<GPTService>().InitializeAsync();
+
+        client.Ready -= Ready;
     }
 
     private async Task LogAsync(LogMessage msg)
