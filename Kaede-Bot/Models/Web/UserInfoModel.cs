@@ -15,4 +15,5 @@ public class SubscriptionModel
 {
     public string Name { get; set; }
     public string Expiration { get; set; }
+    public long ExpirationUnix { get; set; }
 }

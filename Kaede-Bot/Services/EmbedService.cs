@@ -374,7 +374,7 @@ public class EmbedService
             if (userinfo.Subscriptions.Count > 0)
             {
                 foreach (var subscription in userinfo.Subscriptions)
-                    embed.AddField(subscription.Name, subscription.Expiration == "lifetime" ? subscription.Expiration : $"Expires on {subscription.Expiration}", false);
+                    embed.AddField(subscription.Name, subscription.Expiration == "lifetime" ? subscription.Expiration : $"Expires on {subscription.Expiration} (<t:{subscription.ExpirationUnix}:R>)", false);
             }
             else
                 embed.AddField("None", "Subscribe now at https://maple.software/dashboard/store", false);
