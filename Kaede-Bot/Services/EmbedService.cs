@@ -271,7 +271,7 @@ public class EmbedService
     
     public Embed CreateHelpCommandEmbed(IUser user, CommandService commandService, string name)
     {
-        CommandInfo? command = commandService.Commands.ToList().FirstOrDefault(c => c.Name.ToLower() == name.ToLower());
+        CommandInfo? command = commandService.Commands.ToList().FirstOrDefault(c => c.Aliases.Any(a => string.Equals(a, name, StringComparison.CurrentCultureIgnoreCase)));
 
         if (command == null)
             return CreateErrorEmbed(user, "Help",
@@ -288,7 +288,7 @@ public class EmbedService
         EmbedBuilder embed = new EmbedBuilder
         {
             Title = "Help",
-            Description = $"`!{name}`{args}: {command.Summary}",
+            Description = $"`!{command.Name}`{args}: {command.Summary}",
             Color = new Color(Constants.AccentColour),
             Footer = new EmbedFooterBuilder
             {
@@ -297,6 +297,15 @@ public class EmbedService
             }
 
         }.WithCurrentTimestamp();
+
+        if (command.Aliases.Any(a => a != command.Name))
+        {
+            embed.AddField(delegate(EmbedFieldBuilder builder)
+            {
+                builder.Name = "Aliases";
+                builder.Value = string.Join(", ", command.Aliases.Where(a => a != command.Name).Select(a => $"`!{a}`"));
+            });
+        }
 
         if (!string.IsNullOrEmpty(argsExtended))
         {
