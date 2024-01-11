@@ -14,7 +14,6 @@ public class GiveawayService
     private readonly DiscordRestClient _restClient;
     private readonly EmbedService _embedService;
     private readonly ulong _guildId;
-    private readonly ulong _premiumRoleId;
 
     private SocketGuild _guild = null!;
     
@@ -25,12 +24,13 @@ public class GiveawayService
         _restClient = restClient;
         _embedService = embedService;
         _guildId = config.GuildId;
-        _premiumRoleId = config.ServerRoles.PremiumRoleId;
     }
 
-    public async Task InitializeAsync()
+    public Task Initialize()
     {
         _guild = _client.GetGuild(_guildId);
+
+        return Task.CompletedTask;
     }
     
     public async Task OnHeartbeat(int i, int i1)

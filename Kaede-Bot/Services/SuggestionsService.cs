@@ -18,11 +18,9 @@ Stay pawsitive! 🍁💕";
     public SuggestionsService(ConfigurationManager config) =>
         _suggestionsChannelId = config.ServerChannels.SuggestionsChannelId;
     
-    public async Task ClientOnThreadCreated(SocketThreadChannel thread)
+    public Task ClientOnThreadCreated(SocketThreadChannel thread)
     {
-        #pragma warning disable CS4014
-        Task.Run(async () =>
-        #pragma warning restore CS4014
+        _ = Task.Run(async () =>
         {
             if (thread.ParentChannel.Id == _suggestionsChannelId)
             {
@@ -36,5 +34,7 @@ Stay pawsitive! 🍁💕";
                 await thread.SendMessageAsync(NewSuggestionMessage);
             }
         });
+        
+        return Task.CompletedTask;
     }
 }

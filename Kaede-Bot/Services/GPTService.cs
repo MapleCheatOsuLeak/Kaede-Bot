@@ -30,7 +30,7 @@ public class GPTService
         _httpClient = new();
     }
 
-    public async Task InitializeAsync()
+    public Task Initialize()
     {
         var config = _services.GetRequiredService<ConfigurationManager>();
         
@@ -40,6 +40,8 @@ public class GPTService
         _temperature = config.GPTModelConfiguration.Temperature;
         _maxTokens = config.GPTModelConfiguration.MaxTokens;
         _systemMessage = config.GPTModelConfiguration.SystemMessage;
+        
+        return Task.CompletedTask;
     }
 
     public async Task HandlePrompt(SocketCommandContext context, int promptPos)

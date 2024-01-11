@@ -42,15 +42,15 @@ class Program
     {
         var client = _services.GetRequiredService<DiscordSocketClient>(); 
         
-        await _services.GetRequiredService<ActivityService>().InitializeAsync();
+        await _services.GetRequiredService<ActivityService>().Initialize();
         
-        await _services.GetRequiredService<PremiumService>().InitializeAsync();
+        await _services.GetRequiredService<PremiumService>().Initialize();
         client.LatencyUpdated += _services.GetRequiredService<PremiumService>().OnHeartbeat;
 
-        await _services.GetRequiredService<AnticheatWarningService>().InitializeAsync();
+        await _services.GetRequiredService<AnticheatWarningService>().Initialize();
         client.LatencyUpdated += _services.GetRequiredService<AnticheatWarningService>().OnHeartbeat;
         
-        await _services.GetRequiredService<GiveawayService>().InitializeAsync();
+        await _services.GetRequiredService<GiveawayService>().Initialize();
         client.LatencyUpdated += _services.GetRequiredService<GiveawayService>().OnHeartbeat;
         
         client.ThreadCreated += _services.GetRequiredService<SuggestionsService>().ClientOnThreadCreated;
@@ -60,7 +60,7 @@ class Program
         
         await _services.GetRequiredService<CommandHandlingService>().InitializeAsync();
 
-        await _services.GetRequiredService<GPTService>().InitializeAsync();
+        await _services.GetRequiredService<GPTService>().Initialize();
 
         client.Ready -= Ready;
     }

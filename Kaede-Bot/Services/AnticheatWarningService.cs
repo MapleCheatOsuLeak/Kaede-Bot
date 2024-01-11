@@ -25,35 +25,42 @@ public class AnticheatWarningService
         _anticheatUpdatesChannelId = config.ServerChannels.AnticheatUpdatesChannelId;
     }
 
-    public async Task InitializeAsync()
+    public Task Initialize()
     {
         var guild = _client.GetGuild(_guildId);
 
         _anticheatUpdatesChannel = guild.GetTextChannel(_anticheatUpdatesChannelId);
+
+        return Task.CompletedTask;
     }
 
-    public async Task OnHeartbeat(int i, int i1)
+    public Task OnHeartbeat(int i, int i1)
     {
-        var response = await _httpClient.GetAsync("https://maple.software/backend/api/discordv2?t=2");
-        if (!response.IsSuccessStatusCode)
-            return;
-
-        var anticheatInfoModel = await response.Content.ReadFromJsonAsync<AnticheatInfoModel>();
-        if (anticheatInfoModel == null || anticheatInfoModel.Code != 0)
-            return;
-
-        var anticheats = anticheatInfoModel.Anticheats;
-        if (_anticheats.Count > 0)
+        _ = Task.Run(async () =>
         {
-            var updatedAnticheats = anticheats.Where(newAnticheat => _anticheats.Any(oldAnticheat =>
-                newAnticheat.GameName == oldAnticheat.GameName &&
-                newAnticheat.AnticheatChecksum != oldAnticheat.AnticheatChecksum));
+            var response = await _httpClient.GetAsync("https://maple.software/backend/api/discordv2?t=2");
+            if (!response.IsSuccessStatusCode)
+                return;
 
-            foreach (var updatedAnticheat in updatedAnticheats)
-                await _anticheatUpdatesChannel.SendMessageAsync("@everyone",
-                    embed: _embedService.CreateAnticheatUpdateEmbed(updatedAnticheat.GameName));
-        }
+            var anticheatInfoModel = await response.Content.ReadFromJsonAsync<AnticheatInfoModel>();
+            if (anticheatInfoModel == null || anticheatInfoModel.Code != 0)
+                return;
 
-        _anticheats = anticheats;
+            var anticheats = anticheatInfoModel.Anticheats;
+            if (_anticheats.Count > 0)
+            {
+                var updatedAnticheats = anticheats.Where(newAnticheat => _anticheats.Any(oldAnticheat =>
+                    newAnticheat.GameName == oldAnticheat.GameName &&
+                    newAnticheat.AnticheatChecksum != oldAnticheat.AnticheatChecksum));
+
+                foreach (var updatedAnticheat in updatedAnticheats)
+                    await _anticheatUpdatesChannel.SendMessageAsync("@everyone",
+                        embed: _embedService.CreateAnticheatUpdateEmbed(updatedAnticheat.GameName));
+            }
+
+            _anticheats = anticheats;
+        });
+
+        return Task.CompletedTask;
     }
 }

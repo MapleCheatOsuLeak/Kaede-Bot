@@ -17,14 +17,12 @@ public class ActivityService
         _activities = config.Activities.Select(a => new Game(a)).ToList();
     }
 
-    public async Task InitializeAsync()
+    public Task Initialize()
     {
         if (_activities.Count == 0)
-            return;
+            return Task.CompletedTask;
         
-        #pragma warning disable CS4014
-        Task.Run(async () =>
-        #pragma warning restore CS4014
+        _ = Task.Run(async () =>
         {
             int currentActivityIndex = 0;
             while (true)
@@ -37,5 +35,7 @@ public class ActivityService
             }
             // ReSharper disable once FunctionNeverReturns
         });
+        
+        return Task.CompletedTask;
     }
 }

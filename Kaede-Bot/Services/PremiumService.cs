@@ -23,35 +23,42 @@ public class PremiumService
         _premiumRoleId = config.ServerRoles.PremiumRoleId;
     }
 
-    public async Task InitializeAsync()
+    public Task Initialize()
     {
         _guild = _client.GetGuild(_guildId);
+
+        return Task.CompletedTask;
     }
     
-    public async Task OnHeartbeat(int i, int i1)
+    public Task OnHeartbeat(int i, int i1)
     {
-        var response = await _httpClient.GetAsync("https://maple.software/backend/api/discordv2?t=1");
-        if (!response.IsSuccessStatusCode)
-            return;
-
-        var subscribersModel = await response.Content.ReadFromJsonAsync<SubscribersModel>();
-        if (subscribersModel == null || subscribersModel.Code != 0)
-            return;
-
-        var subscribers = subscribersModel.Subscribers.Select(ulong.Parse);
-        foreach (var user in await _guild.GetUsersAsync().FlattenAsync())
+        _ = Task.Run(async () =>
         {
-            if (user is not SocketGuildUser guildUser)
+            var response = await _httpClient.GetAsync("https://maple.software/backend/api/discordv2?t=1");
+            if (!response.IsSuccessStatusCode)
+                return;
+
+            var subscribersModel = await response.Content.ReadFromJsonAsync<SubscribersModel>();
+            if (subscribersModel == null || subscribersModel.Code != 0)
+                return;
+
+            var subscribers = subscribersModel.Subscribers.Select(ulong.Parse);
+            foreach (var user in await _guild.GetUsersAsync().FlattenAsync())
+            {
+                if (user is not SocketGuildUser guildUser)
                     continue;
 
-            // ReSharper disable once PossibleMultipleEnumeration
-            bool isSubscribed = subscribers.Any(s => s == user.Id);
-            bool hasPremiumRole = guildUser.Roles.Any(r => r.Id == _premiumRoleId);
+                // ReSharper disable once PossibleMultipleEnumeration
+                bool isSubscribed = subscribers.Any(s => s == user.Id);
+                bool hasPremiumRole = guildUser.Roles.Any(r => r.Id == _premiumRoleId);
 
-            if (isSubscribed && !hasPremiumRole)
-                await guildUser.AddRoleAsync(_premiumRoleId);
-            else if (!isSubscribed && hasPremiumRole)
-                await guildUser.RemoveRoleAsync(_premiumRoleId);
-        }
+                if (isSubscribed && !hasPremiumRole)
+                    await guildUser.AddRoleAsync(_premiumRoleId);
+                else if (!isSubscribed && hasPremiumRole)
+                    await guildUser.RemoveRoleAsync(_premiumRoleId);
+            }
+        });
+
+        return Task.CompletedTask;
     }
 }

@@ -18,11 +18,9 @@ Our adorable staff will be reviewing your report soon. While you wait, feel free
     public BugReportsService(ConfigurationManager config) =>
         _bugReportsChannelId = config.ServerChannels.BugReportsChannelId;
     
-    public async Task ClientOnThreadCreated(SocketThreadChannel thread)
+    public Task ClientOnThreadCreated(SocketThreadChannel thread)
     {
-        #pragma warning disable CS4014
-        Task.Run(async () =>
-        #pragma warning restore CS4014
+        _ = Task.Run(async () =>
         {
             if (thread.ParentChannel.Id == _bugReportsChannelId)
             {
@@ -33,5 +31,7 @@ Our adorable staff will be reviewing your report soon. While you wait, feel free
                 await thread.SendMessageAsync(NewBugReportMessage);
             }
         });
+
+        return Task.CompletedTask;
     }
 }
