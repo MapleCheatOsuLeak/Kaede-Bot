@@ -12,7 +12,7 @@ public static class Extensions
 
     public static string GetFullname(this IUser user)
     {
-        return $"{user.GetNicknameOrUsername()}#{user.Discriminator}";
+        return $"{user.GetNicknameOrUsername()}";
     }
     
     public static string GetHumanReadableString(this DateTimeOffset? dateTime)
