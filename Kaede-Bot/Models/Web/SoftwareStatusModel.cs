@@ -6,6 +6,7 @@ public class SoftwareStatusModel
 {
     [JsonPropertyName("code")]
     public int Code { get; set; }
+    public int OnlineCount { get; set; }
     public List<CheatStatusModel> Statuses { get; set; }
 }
 

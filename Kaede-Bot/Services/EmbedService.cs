@@ -394,12 +394,13 @@ public class EmbedService
         return embed.Build();
     }
     
-    public Embed CreateSoftwareStatus(IUser user, List<CheatStatusModel> statuses)
+    public Embed CreateStatusEmbed(IUser user, SoftwareStatusModel status)
     {
         EmbedBuilder embed = new EmbedBuilder
         {
-            Title = ":shield: Software status",
+            Title = ":tools: Status",
             Color = new Color(Constants.AccentColour),
+            Description = $"Currently online: {status.OnlineCount} user{(status.OnlineCount == 1 ? string.Empty : "s")}",
             
             Footer = new EmbedFooterBuilder
             {
@@ -408,8 +409,8 @@ public class EmbedService
             }
         }.WithCurrentTimestamp();
 
-        foreach (var status in statuses)
-            embed.AddField(status.Name, status.Status, false);
+        foreach (var softwareStatus in status.Statuses)
+            embed.AddField(softwareStatus.Name, softwareStatus.Status, false);
 
         return embed.Build();
     }

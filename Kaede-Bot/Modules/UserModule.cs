@@ -89,13 +89,13 @@ public class UserModule : ModuleBase<SocketCommandContext>
             var status = await response.Content.ReadFromJsonAsync<SoftwareStatusModel>();
             if (status != null)
             {
-                await Context.Channel.SendMessageAsync(embed: _embedService.CreateSoftwareStatus(Context.User, status.Statuses));
+                await Context.Channel.SendMessageAsync(embed: _embedService.CreateStatusEmbed(Context.User, status));
 
                 return;
             }
         }
 
-        await Context.Channel.SendMessageAsync(embed: _embedService.CreateErrorEmbed(Context.User, "Software status", "Failed to retrieve software status."));
+        await Context.Channel.SendMessageAsync(embed: _embedService.CreateErrorEmbed(Context.User, "Status", "Failed to retrieve software status."));
     }
 
     [Command("kudos send")]
