@@ -38,7 +38,7 @@ public class UserModule : ModuleBase<SocketCommandContext>
         }
     }
     
-    [Command("userinfo")]
+    [Command("userinfo"), Alias("ui")]
     [Summary("Shows information about a user. (Shows information about a user who invoked the command if `mentionOrId` is not specified.)")]
     public async Task UserInfo([Summary("ID or mention of a user.")]string? mentionOrId = null)
     {
