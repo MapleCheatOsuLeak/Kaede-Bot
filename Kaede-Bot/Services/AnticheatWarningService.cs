@@ -38,7 +38,7 @@ public class AnticheatWarningService
     {
         _ = Task.Run(async () =>
         {
-            var response = await _httpClient.GetAsync("https://maple.software/backend/api/discordv2?t=2");
+            var response = await _httpClient.GetAsync("https://maple.software/backend/api/discord?t=2");
             if (!response.IsSuccessStatusCode)
                 return;
 
