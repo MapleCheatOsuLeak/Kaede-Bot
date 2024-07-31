@@ -2,6 +2,7 @@
 using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
+using Kaede_Bot.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Kaede_Bot.Services;
@@ -10,6 +11,7 @@ public class CommandHandlingService
     {
         private readonly CommandService _commands;
         private readonly DiscordSocketClient _discord;
+        private readonly ConfigurationManager _configuration;
         private readonly GPTService _gpt;
         private readonly EmbedService _embedService;
         private readonly IServiceProvider _services;
@@ -18,6 +20,7 @@ public class CommandHandlingService
         {
             _commands = services.GetRequiredService<CommandService>();
             _discord = services.GetRequiredService<DiscordSocketClient>();
+            _configuration = services.GetRequiredService<ConfigurationManager>();
             _gpt = services.GetRequiredService<GPTService>();
             _embedService = services.GetRequiredService<EmbedService>();
             _services = services;
@@ -33,16 +36,16 @@ public class CommandHandlingService
 
         public async Task MessageReceivedAsync(SocketMessage rawMessage)
         {
-            if (!(rawMessage is SocketUserMessage message))
+            if (rawMessage is not SocketUserMessage message)
                 return;
             
             if (message.Source != MessageSource.User)
                 return;
 
-            if (!(message.Author is SocketGuildUser))
+            if (message.Author is not SocketGuildUser author)
                 return;
 
-            if (!(message.Channel is SocketTextChannel))
+            if (message.Channel is not SocketTextChannel)
                 return;
 
             var argPos = 0;
@@ -61,6 +64,21 @@ public class CommandHandlingService
 
             if (!message.HasCharPrefix('!', ref argPos))
                 return;
+
+            if (message.Channel.Id != _configuration.ServerChannels.BotsChannelId && !author.Roles.Select(r => r.Id).Intersect(_configuration.BotsChannelBypassRoleIds).Any())
+            {
+                #pragma warning disable CS4014
+                Task.Run(async () =>
+                #pragma warning restore CS4014
+                {
+                    var wrongChannelMessage = await message.ReplyAsync("", embed: _embedService.CreateWrongChannelEmbed(author));
+                    await Task.Delay(7500);
+                    await wrongChannelMessage.DeleteAsync();
+                    await message.DeleteAsync();
+                });
+
+                return;
+            }
 
             var context = new SocketCommandContext(_discord, message);
 

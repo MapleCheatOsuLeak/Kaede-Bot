@@ -8,5 +8,6 @@ public class Configuration
     public List<string> Activities { get; set; }
     public ServerRoles ServerRoles { get; set; }
     public ServerChannels ServerChannels { get; set; }
+    public List<ulong> BotsChannelBypassRoleIds { get; set; }
     public GPTModelConfiguration GPTModelConfiguration { get; set; } = new GPTModelConfiguration();
 }

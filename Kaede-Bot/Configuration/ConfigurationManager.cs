@@ -10,6 +10,7 @@ public class ConfigurationManager
     public List<string> Activities { get; private set; }
     public ServerRoles ServerRoles { get; private set; }
     public ServerChannels ServerChannels { get; private set; }
+    public List<ulong> BotsChannelBypassRoleIds { get; private set; }
     public GPTModelConfiguration GPTModelConfiguration { get; private set; }
 
     public ConfigurationManager(string path) => LoadConfiguration(path);
@@ -28,6 +29,7 @@ public class ConfigurationManager
         Activities = config.Activities;
         ServerRoles = config.ServerRoles;
         ServerChannels = config.ServerChannels;
+        BotsChannelBypassRoleIds = config.BotsChannelBypassRoleIds;
         GPTModelConfiguration = config.GPTModelConfiguration;
     }
 }

@@ -43,6 +43,23 @@ public class EmbedService
         return embed.Build();
     }
     
+    public Embed CreateWrongChannelEmbed(IUser user)
+    {
+        var embed = new EmbedBuilder
+        {
+            Title = $"Please use #bots channel for bot commands!",
+            Description = "Let's keep regular channels clean <3",
+            Color = new Color(Constants.ErrorColour),
+            Footer = new EmbedFooterBuilder
+            {
+                Text = $"Executed by {user.GetFullname()}",
+                IconUrl = user.GetAvatarUrl()
+            }
+        }.WithCurrentTimestamp();
+
+        return embed.Build();
+    }
+    
     public Embed CreateBanEmbed(IUser bannedUser, IUser executionUser, string reason)
     {
         EmbedBuilder embed = new EmbedBuilder
