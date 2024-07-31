@@ -43,13 +43,13 @@ public class EmbedService
         return embed.Build();
     }
     
-    public Embed CreateWrongChannelEmbed(IUser user)
+    public Embed CreateWrongChannelEmbed(IUser user, ulong botsChannelId)
     {
         var embed = new EmbedBuilder
         {
-            Title = $"Please use #bots channel for bot commands!",
-            Description = "Let's keep regular channels clean <3",
-            Color = new Color(Constants.ErrorColour),
+            Title = "Let's keep regular channels clean :heart:",
+            Description = $"Please use <#{botsChannelId}> channel for bot commands and chat!",
+            Color = new Color(Constants.AccentColour),
             Footer = new EmbedFooterBuilder
             {
                 Text = $"Executed by {user.GetFullname()}",

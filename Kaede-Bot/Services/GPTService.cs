@@ -5,7 +5,11 @@ using Discord.Commands;
 using Kaede_Bot.Configuration;
 using Kaede_Bot.Database;
 using Kaede_Bot.Models.Database;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.Extensions.DependencyInjection;
+using OpenAI;
+using OpenAI.Chat;
+using Tiktoken;
 
 namespace Kaede_Bot.Services;
 
@@ -16,29 +20,43 @@ public class GPTService
     
     private readonly IServiceProvider _services;
     private readonly KaedeDbContext _kaedeDbContext;
-    private readonly HttpClient _httpClient;
-
-    private string _model;
+    
+    private Encoder _tokenEncoder;
+    private ChatClient _chatClient;
+    
     private float _temperature;
-    private int _maxTokens;
+    private float _topP;
+    private float _frequencyPenalty;
+    private float _presencePenalty;
+    private int _maxInputTokens;
+    private int _maxOutputTokens;
+    private int _maxContextMessages;
+    private int _rateLimitMinutes;
+    private int _rateLimitMessages;
     private string _systemMessage;
 
     public GPTService(IServiceProvider services)
     {
         _services = services;
         _kaedeDbContext = _services.GetRequiredService<KaedeDbContext>();
-        _httpClient = new();
     }
 
     public Task Initialize()
     {
         var config = _services.GetRequiredService<ConfigurationManager>();
         
-        _httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {config.GPTModelConfiguration.Token}");
-
-        _model = config.GPTModelConfiguration.Model;
+        _tokenEncoder = ModelToEncoder.For(config.GPTModelConfiguration.Model);
+        _chatClient = new ChatClient(config.GPTModelConfiguration.Model, config.GPTModelConfiguration.Token);
+        
         _temperature = config.GPTModelConfiguration.Temperature;
-        _maxTokens = config.GPTModelConfiguration.MaxTokens;
+        _topP = config.GPTModelConfiguration.TopP;
+        _frequencyPenalty = config.GPTModelConfiguration.FrequencyPenalty;
+        _presencePenalty = config.GPTModelConfiguration.PresencePenalty;
+        _maxInputTokens = config.GPTModelConfiguration.MaxInputTokens;
+        _maxOutputTokens = config.GPTModelConfiguration.MaxOutputTokens;
+        _maxContextMessages = config.GPTModelConfiguration.MaxContextMessages;
+        _rateLimitMinutes = config.GPTModelConfiguration.RateLimitMinutes;
+        _rateLimitMessages = config.GPTModelConfiguration.RateLimitMessages;
         _systemMessage = config.GPTModelConfiguration.SystemMessage;
         
         return Task.CompletedTask;
@@ -46,13 +64,15 @@ public class GPTService
 
     public async Task HandlePrompt(SocketCommandContext context, int promptPos)
     {
-        if (context.Message.Content[promptPos..].Trim().Length <= 0)
+        var prompt = context.Message.Content[promptPos..].Trim();
+        
+        if (prompt.Length <= 0)
             return;
 
-        if (context.Message.Content[promptPos..].Trim().Length > 200)
+        if (_tokenEncoder.CountTokens(prompt) > _maxInputTokens)
             return;
 
-        if (_kaedeDbContext.GPTMessages.Count(m => m.UserId == context.User.Id && m.Role == "user" && m.Timestamp.AddMinutes(9) > DateTime.UtcNow) >= 3)
+        if (_kaedeDbContext.GPTMessages.Count(m => m.UserId == context.User.Id && m.Role == "user" && m.Timestamp.AddMinutes(_rateLimitMinutes) > DateTime.UtcNow) >= _rateLimitMessages)
             return;
 
         await PromptAsyncLock.WaitAsync();
@@ -61,77 +81,83 @@ public class GPTService
         {
             using (context.Channel.EnterTypingState())
             {
-                var messages = new List<Message>
+                var messages = new List<ChatMessage>
                 {
-                    new()
-                    {
-                        Role = "system",
-                        Content = _systemMessage.Replace("{username}", context.User.GetNicknameOrUsername())
-                    }
+                    new SystemChatMessage(_systemMessage.Replace("{username}", context.User.GetNicknameOrUsername()))
                 };
 
-                int messageCount = _kaedeDbContext.GPTMessages.Count(m => m.UserId == context.User.Id);
-                if (messageCount >= 10)
+                var messageCount = _kaedeDbContext.GPTMessages.Count(m => m.UserId == context.User.Id);
+                if (messageCount >= _maxContextMessages)
                 {
                     _kaedeDbContext.GPTMessages.RemoveRange(_kaedeDbContext.GPTMessages
-                        .Where(m => m.UserId == context.User.Id).OrderBy(m => m.Timestamp).Take(messageCount - 8));
+                        .Where(m => m.UserId == context.User.Id).OrderBy(m => m.Timestamp).Take(2));
+                    
                     await _kaedeDbContext.SaveChangesAsync();
                 }
 
-                messages.AddRange(_kaedeDbContext.GPTMessages.Where(m => m.UserId == context.User.Id)
-                    .OrderBy(m => m.Timestamp).Select(m => new Message()
-                    {
-                        Role = m.Role,
-                        Content = m.Content
-                    }));
-
-                var userMessage = new Message
+                foreach (var message in _kaedeDbContext.GPTMessages.Where(m => m.UserId == context.User.Id).OrderBy(m => m.Timestamp))
                 {
-                    Role = "user",
-                    Content = context.Message.Content[promptPos..].Trim()
-                };
+                    switch (message.Role)
+                    {
+                        case "user":
+                            messages.Add(new UserChatMessage(message.Content));
+                            break;
+                        case "assistant":
+                            messages.Add(new AssistantChatMessage(message.Content));
+                            break;
+                    }
+                }
 
-                messages.Add(userMessage);
+                messages.Add(new UserChatMessage(context.Message.Content[promptPos..].Trim()));
 
                 _kaedeDbContext.GPTMessages.Add(new GPTMessageModel
                 {
                     Id = Guid.NewGuid(),
                     UserId = context.User.Id,
-                    Role = userMessage.Role,
-                    Content = userMessage.Content,
+                    Role = "user",
+                    Content = prompt,
                     Timestamp = DateTime.UtcNow
                 });
 
                 await _kaedeDbContext.SaveChangesAsync();
 
-                var requestData = new Request
+                var chatCompletion = await _chatClient.CompleteChatAsync(messages, new ChatCompletionOptions
                 {
-                    ModelId = _model,
-                    Messages = messages,
+                    MaxTokens = _maxInputTokens + _maxOutputTokens,
                     Temperature = _temperature,
-                    MaxTokens = _maxTokens
-                };
+                    TopP = _topP,
+                    FrequencyPenalty = _frequencyPenalty,
+                    PresencePenalty = _presencePenalty
+                });
 
-                using var response = await _httpClient.PostAsJsonAsync(Endpoint, requestData);
-                ResponseData? responseData = await response.Content.ReadFromJsonAsync<ResponseData>();
-                var choices = responseData?.Choices ?? new List<Choice>();
-                if (choices.Count != 0)
+                switch (chatCompletion.Value.FinishReason)
                 {
-                    messages.Add(choices[0].Message);
+                    case ChatFinishReason.Stop:
+                    case ChatFinishReason.Length:
+                        messages.Add(new AssistantChatMessage(chatCompletion));
 
-                    _kaedeDbContext.GPTMessages.Add(new GPTMessageModel
-                    {
-                        Id = Guid.NewGuid(),
-                        UserId = context.User.Id,
-                        Role = choices[0].Message.Role,
-                        Content = choices[0].Message.Content,
-                        Timestamp = DateTime.UtcNow.AddMilliseconds(100)
-                    });
+                        _kaedeDbContext.GPTMessages.Add(new GPTMessageModel
+                        {
+                            Id = Guid.NewGuid(),
+                            UserId = context.User.Id,
+                            Role = "assistant",
+                            Content = chatCompletion.Value.ToString(),
+                            Timestamp = DateTime.UtcNow.AddMilliseconds(100)
+                        });
 
-                    await _kaedeDbContext.SaveChangesAsync();
+                        await _kaedeDbContext.SaveChangesAsync();
 
-                    await context.Message.ReplyAsync(choices[0].Message.Content.Replace("@everyone", "@ everyone")
-                        .Replace("@here", "@ here"));
+                        await context.Message.ReplyAsync(chatCompletion.Value.ToString().Replace("@everyone", "@ everyone").Replace("@here", "@ here"));
+                        break;
+                    case ChatFinishReason.ContentFilter:
+                        await context.Message.ReplyAsync("Filtered.");
+                        break;
+                    case ChatFinishReason.ToolCalls:
+                        break;
+                    case ChatFinishReason.FunctionCall:
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException("ChatCompletion.FinishReason");
                 }
             }
         }
@@ -140,70 +166,4 @@ public class GPTService
             PromptAsyncLock.Release();
         }
     }
-}
-
-public class Message
-{
-    [JsonPropertyName("role")]
-    public string Role { get; set; } = "";
-    
-    [JsonPropertyName("content")]
-    public string Content { get; set; } = "";
-}
-
-public class Request
-{
-    [JsonPropertyName("model")]
-    public string ModelId { get; set; } = "";
-    
-    [JsonPropertyName("messages")]
-    public List<Message> Messages { get; set; } = new();
-    
-    [JsonPropertyName("temperature")]
-    public float Temperature { get; set; } = 1;
-    
-    [JsonPropertyName("max_tokens")]
-    public float MaxTokens { get; set; } = 150;
-}
- 
-public class ResponseData
-{
-    [JsonPropertyName("id")]
-    public string Id { get; set; } = "";
-    
-    [JsonPropertyName("object")]
-    public string Object { get; set; } = "";
-    
-    [JsonPropertyName("created")]
-    public ulong Created { get; set; }
-    
-    [JsonPropertyName("choices")]
-    public List<Choice> Choices { get; set; } = new();
-    
-    [JsonPropertyName("usage")]
-    public Usage Usage { get; set; } = new();
-}
- 
-public class Choice
-{
-    [JsonPropertyName("index")]
-    public int Index { get; set; }
-    
-    [JsonPropertyName("message")]
-    public Message Message { get; set; } = new();
-    
-    [JsonPropertyName("finish_reason")]
-    public string FinishReason { get; set; } = "";
-}
- 
-public class Usage
-{
-    [JsonPropertyName("prompt_tokens")]
-    public int PromptTokens { get; set; }
-    
-    [JsonPropertyName("completion_tokens")]
-    public int CompletionTokens { get; set; }
-    
-    [JsonPropertyName("total_tokens")]
-    public int TotalTokens { get; set; }
 }
