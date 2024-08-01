@@ -10,6 +10,11 @@
     "maple.software"
   ],
   "ServerRoles": {
+    "AdministratorRoleId": 0,
+    "ModeratorRoleId": 0,
+    "SupportRoleId": 0,
+    "MediaRoleId": 0,
+    "ResellerRoleId": 0,
     "PremiumRoleId": 0,
     "GiveawaysRoleId": 0
   },
