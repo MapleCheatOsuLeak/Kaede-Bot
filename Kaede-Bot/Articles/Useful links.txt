@@ -1,0 +1,14 @@
+Maple home page - https://maple.software/
+Terms of Service - https://maple.software/legal/terms-of-service
+Privacy policy - https://maple.software/legal/privacy-policy
+Getting started - https://maple.software/help/getting-started
+Features - https://maple.software/help/features
+Frequently asked questions - https://maple.software/help/faq
+Payment issues wiki - https://maple.software/help/payment-issues
+Software issues wiki - https://maple.software/help/software-issues
+Contacts - https://maple.software/help/contact-us
+Dashboard - https://maple.software/dashboard/
+Store - https://maple.software/dashboard/store/
+Settings - https://maple.software/dashboard/settings
+Status - https://maple.software/dashboard/status
+Wiki - https://maple-software.gitbook.io/maple.software

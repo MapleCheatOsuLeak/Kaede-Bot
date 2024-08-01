@@ -1,0 +1,8 @@
+﻿At certain periods in time Maple.Software may become outdated / detected due to new anti-cheat updates. It is not recommended to use on osu!bancho, yet this method allows usage on private server(s) and offline; please follow each step accurately.
+- Download old 'osu!auth.dll' file from our discord server. (usually from #announcements or #anticheat-alerts)
+- Navigate into your osu! folder.
+- Enable 'Hidden Items' in Windows Explorer window.
+- Delete current 'osu!auth.dll' file.
+- Drag & Drop Downloaded 'osu!auth.dll' file into osu! directory.
+- Create an empty file named '_staging' (no file extension) to prevent osu! from auto-updating.
+- Enjoy!

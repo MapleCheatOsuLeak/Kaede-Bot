@@ -1,0 +1,24 @@
+Relax
+Maple will click the circles for you. Give your fingers a break from the heat of things.
+
+Aim Assist *
+Helps you aim the circles. Now you can finally FC that one Sotarks map.
+
+Timewarp
+Play the game at any pace you want.
+
+Replay Bot *
+Tired of playing at all? With Replay Bot you can copy any replay. Just sit back and enjoy.
+
+Visuals
+Includes AR Changer, HD/FL Removers and UI customization.
+
+Spoofer * **
+Allows you to create and play on multiple osu! accounts.
+
+Misc
+Includes no spectator mode, score submission prompt and Discord RPC spoofer.
+
+* - These features may or may not be removed from Maple Lite with the release of Maple Full.
+
+** - Spoofer is currently detected on the official osu! server. You can only use it on private servers.

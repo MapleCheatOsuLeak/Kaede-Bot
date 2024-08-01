@@ -1,0 +1,9 @@
+- What payment methods can I use?
+You can use Debit/Credit Cards, Bitcoin, Litecoin and a bunch of other payment methods that our resellers accept.
+
+- I didn't receive my subscription after I made the payment!
+In cases like this, please contact us and include the following information:
+The payment method you used.
+The date and time of the transaction.
+The product you've bought.
+Your User ID.

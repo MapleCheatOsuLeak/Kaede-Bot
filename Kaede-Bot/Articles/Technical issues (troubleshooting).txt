@@ -1,0 +1,24 @@
+Maple may experience crashes either during the injection process or while you are playing the game due to several factors. To address these issues, here are some potential solutions to consider:
+
+Errors stating that "MSVCP140.dll was not found" and that "D3DX9_34.DLL" cannot be loaded indicate that some required dependencies may not have been installed correctly. Please revisit the installation instructions and ensure all necessary components have been installed. After doing so, restart your computer to see if the issues have been resolved.
+
+Anti-Virus(s) like Malwarebytes, BitDefender, Windows Defender, and Kaspersky have to be fully paused for Maple.Software to work without instabilities. Also, tools such as Defender Control do not disable specific functions of Windows Defender which may lead to instabilities.
+
+Anti-cheat programs like Riot Games' Vanguard could interfere with the functioning of Maple.Software. It's advisable to turn off or exit any active anti-cheat software on your system before using Maple.Software.
+
+Third-party overlays from services like Discord, Overwolf, MSI Afterburner, GeForce Experience, and others might cause compatibility issues with Maple.Software, preventing the Maple UI from displaying in-game. Make sure to disable all such overlays for uninterrupted usage.
+
+If you are using an unstable VPN connection, it might lead to issues with Maple.Software's stability. In the event that Maple.Software detects an interruption in the connection, it will automatically close crash as a part of its security protocol.
+
+Using a custom Windows installation, such as GHOST SPECTRE, can also introduce instabilities with Maple. Custom OS builds often modify system files and settings which may not be compatible with Maple's requirements, potentially leading to operational issues.
+
+It's also possible that Maple.Software may be outdated, which could lead to it not functioning correctly. You can verify the current status at the following location: https://maple.software/dashboard/status
+
+At certain periods in time Maple.Software may become outdated / detected due to new anti-cheat updates. It is not recommended to use on osu!bancho, yet this method allows usage on private server(s) and offline; please follow each step accurately.
+- Download old 'osu!auth.dll' file from our discord server. (usually from #announcements or #anticheat-alerts)
+- Navigate into your osu! folder.
+- Enable 'Hidden Items' in Windows Explorer window.
+- Delete current 'osu!auth.dll' file.
+- Drag & Drop Downloaded 'osu!auth.dll' file into osu! directory.
+- Create an empty file named '_staging' (no file extension) to prevent osu! from auto-updating.
+- Enjoy!

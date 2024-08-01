@@ -1,0 +1,27 @@
+﻿ - Who founded the Maple project?
+Maple was founded by Maple Syrup and Azuki.
+
+- When will Maple Full be released?
+Release date of Maple Full is TBA, sorry. Please wait patiently.
+
+- Is Maple hardware-locked?
+Yes, however it's not as strict as you might think.
+You're still allowed to use Maple, even if you replace some hardware parts of your PC.
+You're still allowed to use Maple, even if you reinstall your operating system.
+You're allowed to change devices once a month, your Maple account will be automatically re-linked to the new device.
+You're allowed to request a manual HWID reset once per calendar month.
+
+- Can I have a trial for Maple before buying it?
+We do not offer trials.
+
+- Can I get banned?
+Any cheat can get you banned, Maple can get detected by osu!'s anti-cheat measures at any point in time. However, we're doing our best to prevent this from happening.
+
+- What will happen if Maple gets detected?
+We'll update detection status in loader and make an announcement on our discord server. All users will be compensated after we push a fix.
+
+- osu! got an update, can I still use Maple?
+Maple is developed in a way that it can still be used after most updates. However, if it gets outdated, we will try our best to fix it as quickly as possible and will compensate everyone for the wait.
+
+- Can I request a refund?
+Yes! But please read our Terms of Service (https://maple.software/legal/terms-of-service) before proceeding.

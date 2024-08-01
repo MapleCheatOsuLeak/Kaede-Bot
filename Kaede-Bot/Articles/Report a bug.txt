@@ -1,0 +1,2 @@
+- How can I report a bug?
+You can report a bug by creating a new post in the #bug-reports channel on our discord server. Make sure to follow the format!

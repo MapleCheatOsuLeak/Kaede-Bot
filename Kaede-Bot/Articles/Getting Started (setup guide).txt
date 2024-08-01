@@ -1,0 +1,22 @@
+- Creating an account
+You can create an account on https://maple.software/auth/signup.
+
+- Getting a subscription
+Once you've created an account, go to the store page (https://maple.software/dashboard/store). Select the desired subscription plan and payment method and proceed to payment.
+
+- Downloading the loader
+Once you've made the payment, you'll be able to download Maple Loader from your dashboard (https://maple.software/dashboard).
+
+- Running Maple
+Launch Maple Loader, enter your credentials and click Login. Now, select the cheat you want to load and click Load. Wait for it to tell you that the injection process has started and click Ok. Launch the game and wait for the software to inject.
+
+Note: the injection process takes around 3 minutes on average, but you may see different results depending on your hardware and internet speed.
+Please don't close the game until it's finished.
+
+- Requirements
+Your antivirus may flag our loader as a virus or interfere with our injection process, so we may ask you to disable it.
+Stable internet connection.
+Windows 10 or newer.
+Visual C++ Redistributable x64 and Visual C++ Redistributable x86. (https://aka.ms/vs/17/release/vc_redist.x64.exe and https://aka.ms/vs/17/release/vc_redist.x86.exe)
+Latest .net framework. (https://dotnet.microsoft.com/en-us/download/dotnet-framework/net48)
+DirectX End-User Runtime. (https://www.microsoft.com/en-us/download/details.aspx?id=35)

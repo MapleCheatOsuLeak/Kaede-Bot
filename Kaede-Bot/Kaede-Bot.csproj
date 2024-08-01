@@ -28,4 +28,66 @@
       </None>
     </ItemGroup>
 
+    <ItemGroup>
+      <None Remove="Articles\About Maple.txt" />
+      <EmbeddedResource Include="Articles\About Maple.txt">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </EmbeddedResource>
+      <None Remove="Articles\Contacts.txt" />
+      <EmbeddedResource Include="Articles\Contacts.txt">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </EmbeddedResource>
+      <None Remove="Articles\Discord account linking.txt" />
+      <EmbeddedResource Include="Articles\Discord account linking.txt">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </EmbeddedResource>
+      <None Remove="Articles\Discord server rules.txt" />
+      <EmbeddedResource Include="Articles\Discord server rules.txt">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </EmbeddedResource>
+      <None Remove="Articles\FAQ.txt" />
+      <None Remove="Articles\Feature suggestion.txt" />
+      <EmbeddedResource Include="Articles\Feature suggestion.txt">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </EmbeddedResource>
+      <None Remove="Articles\Getting Started (setup guide).txt" />
+      <EmbeddedResource Include="Articles\Getting Started (setup guide).txt">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </EmbeddedResource>
+      <None Remove="Articles\Maple features (Maple Lite for osu!).txt" />
+      <EmbeddedResource Include="Articles\Maple features (Maple Lite for osu!).txt">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </EmbeddedResource>
+      <None Remove="Articles\Payment information.txt" />
+      <None Remove="Articles\Report a bug.txt" />
+      <EmbeddedResource Include="Articles\Report a bug.txt">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </EmbeddedResource>
+      <None Remove="Articles\Technical issues (troubleshooting).txt" />
+      <None Remove="Articles\Terms of Service.txt" />
+      <None Remove="Articles\Useful links.txt" />
+      <EmbeddedResource Include="Articles\Technical issues (troubleshooting).txt">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </EmbeddedResource>
+      <EmbeddedResource Include="Articles\Useful links.txt">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </EmbeddedResource>
+      <None Remove="Articles\Payment information and issues.txt" />
+      <EmbeddedResource Include="Articles\Payment information and issues.txt">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </EmbeddedResource>
+      <None Remove="Articles\Refund policy.txt" />
+      <EmbeddedResource Include="Articles\Refund policy.txt">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </EmbeddedResource>
+      <None Remove="Articles\Guide for outdated, detected and unknown statuses.txt" />
+      <EmbeddedResource Include="Articles\Setup guide for outdated, detected and unknown statuses.txt">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </EmbeddedResource>
+      <None Remove="Articles\Frequently asked questions.txt" />
+      <EmbeddedResource Include="Articles\Frequently asked questions.txt">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </EmbeddedResource>
+    </ItemGroup>
+
 </Project>
