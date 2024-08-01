@@ -3,6 +3,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Discord;
 using Discord.Commands;
+using Discord.WebSocket;
 using Kaede_Bot.Configuration;
 using Kaede_Bot.Database;
 using Kaede_Bot.Models.Database;
@@ -44,6 +45,11 @@ public class GPTService
         """)
     );
     
+    private static readonly ChatTool getMapleStaffTool = ChatTool.CreateFunctionTool(
+        functionName: nameof(getMapleStaff),
+        functionDescription: "Retrieves a list of users, who are a part of Maple staff team. This includes but isn't limited to: admins, moderators, support and resellers."
+    );
+    
     private static readonly ChatTool getMapleUserInfoTool = ChatTool.CreateFunctionTool(
         functionName: nameof(getMapleUserInfo),
         functionDescription: "Retrieves information about this user's Maple account. This information includes Maple User Id, Join date, Software subscriptions and their expiration."
@@ -62,6 +68,9 @@ public class GPTService
     private readonly IServiceProvider _services;
     private readonly KaedeDbContext _kaedeDbContext;
     private readonly HttpClient _httpClient;
+    
+    private SocketGuild _guild;
+    private List<ulong> _staffRoleIds;
     
     private Encoder _tokenEncoder;
     private ChatClient _chatClient;
@@ -87,6 +96,16 @@ public class GPTService
     public Task Initialize()
     {
         var config = _services.GetRequiredService<ConfigurationManager>();
+        
+        _guild = _services.GetRequiredService<DiscordSocketClient>().GetGuild(config.GuildId);
+        _staffRoleIds = new List<ulong>
+        {
+            config.ServerRoles.AdministratorRoleId,
+            config.ServerRoles.ModeratorRoleId,
+            config.ServerRoles.SupportRoleId,
+            config.ServerRoles.MediaRoleId,
+            config.ServerRoles.ResellerRoleId
+        };
         
         _tokenEncoder = ModelToEncoder.For(config.GPTModelConfiguration.Model);
         _chatClient = new ChatClient(config.GPTModelConfiguration.Model, config.GPTModelConfiguration.Token);
@@ -169,7 +188,7 @@ public class GPTService
                 {
                     var chatCompletion = await _chatClient.CompleteChatAsync(messages, new ChatCompletionOptions
                     {
-                        Tools = { getArticleListTool, getArticlesTool, getMapleUserInfoTool, getMapleProductsInfoTool, getMapleStatusTool },
+                        Tools = { getArticleListTool, getArticlesTool, getMapleStaffTool, getMapleUserInfoTool, getMapleProductsInfoTool, getMapleStatusTool },
                         MaxTokens = _maxInputTokens + _maxOutputTokens,
                         Temperature = _temperature,
                         TopP = _topP,
@@ -226,6 +245,12 @@ public class GPTService
                                         messages.Add(new ToolChatMessage(toolCall.Id, toolResult));
                                         break;
                                     }
+                                    case nameof(getMapleStaff):
+                                    {
+                                        var toolResult = getMapleStaff();
+                                        messages.Add(new ToolChatMessage(toolCall.Id, toolResult));
+                                        break;
+                                    }
                                     case nameof(getMapleUserInfo):
                                     {
                                         var toolResult = await getMapleUserInfo(context.User.Id);
@@ -274,6 +299,18 @@ public class GPTService
     private string getArticles(string[] fileNames)
     {
         return JsonSerializer.Serialize((from fileName in fileNames select $@"Articles\{fileName}.txt" into articlePath where File.Exists(articlePath) select File.ReadAllText(articlePath)).ToArray());
+    }
+    
+    private string getMapleStaff()
+    {
+        var staff = new Dictionary<string, string[]>();
+        foreach (var roleId in _staffRoleIds)
+        {
+            var role = _guild.GetRole(roleId);
+            staff[role.Name] = role.Members.Select(m => $"{m.DisplayName} ({m.Username})").ToArray();
+        }
+
+        return JsonSerializer.Serialize(staff);
     }
     
     private async Task<string> getMapleUserInfo(ulong userId)
