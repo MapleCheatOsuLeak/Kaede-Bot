@@ -45,6 +45,8 @@ class Program
     {
         var client = _services.GetRequiredService<DiscordSocketClient>();
         
+        client.AuditLogCreated += _services.GetRequiredService<AuditLogWatcherService>().ClientOnAuditLogCreated;
+        
         await _services.GetRequiredService<ActivityService>().Initialize();
         
         await _services.GetRequiredService<PremiumService>().Initialize();
@@ -90,6 +92,7 @@ class Program
             .AddSingleton<DiscordSocketClient>()
             .AddSingleton<DiscordRestClient>()
             .AddSingleton(new ChatClient(config.GPTModelConfiguration.Model, config.GPTModelConfiguration.Token))
+            .AddSingleton<AuditLogWatcherService>()
             .AddSingleton<CommandService>()
             .AddSingleton<CommandHandlingService>()
             .AddSingleton<GPTService>()
