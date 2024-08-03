@@ -67,13 +67,13 @@ public class GPTService
     
     private readonly IServiceProvider _services;
     private readonly KaedeDbContext _kaedeDbContext;
+    private readonly ChatClient _chatClient;
     private readonly HttpClient _httpClient;
     
     private SocketGuild _guild;
     private List<ulong> _staffRoleIds;
     
     private Encoder _tokenEncoder;
-    private ChatClient _chatClient;
     
     private float _temperature;
     private float _topP;
@@ -90,12 +90,15 @@ public class GPTService
     {
         _services = services;
         _kaedeDbContext = _services.GetRequiredService<KaedeDbContext>();
+        _chatClient = _services.GetRequiredService<ChatClient>();
         _httpClient = services.GetRequiredService<HttpClient>();
     }
 
     public Task Initialize()
     {
         var config = _services.GetRequiredService<ConfigurationManager>();
+        
+        _tokenEncoder = ModelToEncoder.For(config.GPTModelConfiguration.Model);
         
         _guild = _services.GetRequiredService<DiscordSocketClient>().GetGuild(config.GuildId);
         _staffRoleIds = new List<ulong>
@@ -106,9 +109,6 @@ public class GPTService
             config.ServerRoles.MediaRoleId,
             config.ServerRoles.ResellerRoleId
         };
-        
-        _tokenEncoder = ModelToEncoder.For(config.GPTModelConfiguration.Model);
-        _chatClient = new ChatClient(config.GPTModelConfiguration.Model, config.GPTModelConfiguration.Token);
         
         _temperature = config.GPTModelConfiguration.Temperature;
         _topP = config.GPTModelConfiguration.TopP;

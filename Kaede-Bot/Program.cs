@@ -1,4 +1,5 @@
-﻿using Discord;
+﻿using System.Text.Json;
+using Discord;
 using Discord.Commands;
 using Discord.Rest;
 using Discord.WebSocket;
@@ -7,6 +8,8 @@ using Kaede_Bot.Database;
 using Kaede_Bot.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using OpenAI;
+using OpenAI.Chat;
 
 namespace Kaede_Bot;
 
@@ -40,7 +43,7 @@ class Program
 
     private async Task Ready()
     {
-        var client = _services.GetRequiredService<DiscordSocketClient>(); 
+        var client = _services.GetRequiredService<DiscordSocketClient>();
         
         await _services.GetRequiredService<ActivityService>().Initialize();
         
@@ -86,6 +89,7 @@ class Program
             })
             .AddSingleton<DiscordSocketClient>()
             .AddSingleton<DiscordRestClient>()
+            .AddSingleton(new ChatClient(config.GPTModelConfiguration.Model, config.GPTModelConfiguration.Token))
             .AddSingleton<CommandService>()
             .AddSingleton<CommandHandlingService>()
             .AddSingleton<GPTService>()

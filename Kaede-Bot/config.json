@@ -28,6 +28,11 @@
   },
   "BotsChannelBypassRoleIds": [
   ],
+  "KudosConfiguration": {
+    "BaseKudosValue": 10,
+    "MinContributionFactorThreshold": 0.3,
+    "GTPSystemMessage": "Your job is to evaluate the complexity multiplier (float, 1 to 2) of the ticket and each user's contribution factor (float, 0 to 1) based on the ticket chat log. This is used for a reward system for support team members. Your response should be in JSON format, consisting of the following fields: ComplexityMultiplier, array named \"Contributions\" of the following objects: (UserId, ContributionFactor). Omit markdown."
+  },
   "GPTModelConfiguration": {
     "Token": "",
     "Model": "gpt-4o",

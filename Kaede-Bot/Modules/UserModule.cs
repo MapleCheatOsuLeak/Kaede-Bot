@@ -99,8 +99,8 @@ public class UserModule : ModuleBase<SocketCommandContext>
     }
 
     [Command("kudos send")]
-    [Summary("Sends kudos to the specified user. Limited to one kudos per user per 24 hours")]
-    public async Task KudosSend([Summary("Mention or id of a user")] string mentionOrId)
+    [Summary("Sends kudos to the specified user.")]
+    public async Task KudosSend([Summary("Mention or id of a user")] string mentionOrId, [Summary("Amount of kudos to send.")] int amount)
     {
         if (ulong.TryParse(mentionOrId, out var userId) || MentionUtils.TryParseUser(mentionOrId, out userId))
         {
@@ -109,16 +109,10 @@ public class UserModule : ModuleBase<SocketCommandContext>
             {
                 if (user.Id != Context.User.Id)
                 {
-                    if (_kudosService.CanSendKudos(Context.User, user))
-                    {
-                        await _kudosService.SendKudos(Context.User, user);
-
+                    if (await _kudosService.SendKudos(Context.User, user, amount))
                         await Context.Channel.SendMessageAsync(embed: _embedService.CreateKudosSendEmbed(Context.User, user));
-                    }
                     else
-                    {
-                        await Context.Channel.SendMessageAsync(embed: _embedService.CreateErrorEmbed(Context.User, "Kudos", $"You can't send kudos to this user yet!\nYou'll be able to send kudos <t:{(new DateTimeOffset(_kudosService.GetKudosCooldown(Context.User, user))).ToUnixTimeSeconds()}:R>"));
-                    }
+                        await Context.Channel.SendMessageAsync(embed: _embedService.CreateErrorEmbed(Context.User, "Kudos", "You don't have enough kudos!"));
                 }
                 else
                 {

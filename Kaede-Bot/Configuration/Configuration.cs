@@ -9,5 +9,6 @@ public class Configuration
     public ServerRoles ServerRoles { get; set; }
     public ServerChannels ServerChannels { get; set; }
     public List<ulong> BotsChannelBypassRoleIds { get; set; }
+    public KudosConfiguration KudosConfiguration { get; set; }
     public GPTModelConfiguration GPTModelConfiguration { get; set; } = new GPTModelConfiguration();
 }
