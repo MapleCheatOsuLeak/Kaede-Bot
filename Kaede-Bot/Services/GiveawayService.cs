@@ -93,7 +93,7 @@ public class GiveawayService
 
         IUser host = await _restClient.GetUserAsync(giveaway.HostId) ?? _client.CurrentUser as IUser;
         
-        var participants = (await message.GetReactionUsersAsync(new Emoji("🎁"), 500).FlattenAsync()).Where(u => !u.IsBot && _guild.GetUser(u.Id) != null).ToList();
+        var participants = (await message.GetReactionUsersAsync(new Emoji("🎁"), 750).FlattenAsync()).Where(u => !u.IsBot && _guild.GetUser(u.Id) != null).ToList();
         if (participants.Any())
         {
             List<IUser> winners = new();
